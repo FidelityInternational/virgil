@@ -242,3 +242,100 @@ var _ = Describe("#GetUsedSecGroups", func() {
 		}))
 	})
 })
+
+var _ = Describe("#GetFirewallRules", func() {
+	It("Returns an array of Firewall Rules", func() {
+		var securityGroups = []cfclient.SecGroup{
+			cfclient.SecGroup{
+				Guid:    "2",
+				Name:    "test-sec-group2",
+				Running: true,
+				Staging: false,
+				Rules: []cfclient.SecGroupRule{
+					cfclient.SecGroupRule{
+						Protocol:    "tcp",
+						Ports:       "1,2-4",
+						Destination: "2.2.2.2",
+					},
+					cfclient.SecGroupRule{
+						Protocol:    "tcp",
+						Ports:       "8",
+						Destination: "5.5.5.5",
+					},
+				},
+				SpacesData: []cfclient.SpaceResource{},
+			},
+			cfclient.SecGroup{
+				Guid:    "3",
+				Name:    "test-sec-group3",
+				Running: false,
+				Staging: true,
+				Rules: []cfclient.SecGroupRule{
+					cfclient.SecGroupRule{
+						Protocol:    "tcp",
+						Ports:       "2,3-4",
+						Destination: "3.3.3.3",
+					},
+				},
+				SpacesData: []cfclient.SpaceResource{},
+			},
+			cfclient.SecGroup{
+				Guid:    "4",
+				Name:    "test-sec-group4",
+				Running: true,
+				Staging: true,
+				Rules: []cfclient.SecGroupRule{
+					cfclient.SecGroupRule{
+						Protocol:    "tcp",
+						Ports:       "1,4-7",
+						Destination: "4.4.4.4",
+					},
+				},
+				SpacesData: []cfclient.SpaceResource{},
+			},
+			cfclient.SecGroup{
+				Guid:    "5",
+				Name:    "test-sec-group5",
+				Running: false,
+				Staging: false,
+				Rules: []cfclient.SecGroupRule{
+					cfclient.SecGroupRule{
+						Protocol:    "udp",
+						Ports:       "2",
+						Destination: "1.1.1.1",
+					},
+				},
+				SpacesData: []cfclient.SpaceResource{
+					cfclient.SpaceResource{
+						Meta:   cfclient.Meta{Guid: "1"},
+						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+					},
+				},
+			},
+		}
+		rules := utility.GetFirewallRules(securityGroups)
+		Expect(rules).To(HaveLen(9))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "1", Protocol: "tcp", Destination: []string{"2.2.2.2", "4.4.4.4"}}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "3", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "4", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3", "4.4.4.4"}}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "5", Protocol: "tcp", Destination: []string{"4.4.4.4"}}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "6", Protocol: "tcp", Destination: []string{"4.4.4.4"}}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "7", Protocol: "tcp", Destination: []string{"4.4.4.4"}}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "8", Protocol: "tcp", Destination: []string{"5.5.5.5"}}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "udp", Destination: []string{"1.1.1.1"}}))
+	})
+})
+
+var _ = Describe("RemoveDuplicates", func() {
+	It("removes duplicates from an array of strings", func() {
+		var strings = []string{"a", "a", "b", "c", "a", "b"}
+		Expect(strings).To(HaveLen(6))
+		utility.RemoveDuplicates(&strings)
+		Expect(strings).To(HaveLen(3))
+		Expect(strings).To(ContainElement("a"))
+		Expect(strings).To(ContainElement("b"))
+		Expect(strings).To(ContainElement("c"))
+	})
+
+})

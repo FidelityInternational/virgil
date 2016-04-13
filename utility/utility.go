@@ -49,7 +49,7 @@ func PortExpand(portString string) ([]string, error) {
 	return ports, nil
 }
 
-// ProcessRule - returns a concise list of firewall rules
+// ProcessRule - returns a concise list of firewall rules for one security group rule
 func ProcessRule(secGroupRule cfclient.SecGroupRule, firewallRules []FirewallRule) ([]FirewallRule, error) {
 	ports, err := PortExpand(secGroupRule.Ports)
 	if err != nil {
@@ -60,6 +60,7 @@ func ProcessRule(secGroupRule cfclient.SecGroupRule, firewallRules []FirewallRul
 		for i, rule := range firewallRules {
 			if rule.Port == port && rule.Protocol == secGroupRule.Protocol {
 				rule.Destination = append(rule.Destination, secGroupRule.Destination)
+				RemoveDuplicates(&rule.Destination)
 				firewallRules[i] = rule
 				newRule = false
 			}
@@ -76,6 +77,20 @@ func ProcessRule(secGroupRule cfclient.SecGroupRule, firewallRules []FirewallRul
 	return firewallRules, nil
 }
 
+// RemoveDuplicates - removes duplicated from array of strings
+func RemoveDuplicates(xs *[]string) {
+	found := make(map[string]bool)
+	j := 0
+	for i, x := range *xs {
+		if !found[x] {
+			found[x] = true
+			(*xs)[j] = (*xs)[i]
+			j++
+		}
+	}
+	*xs = (*xs)[:j]
+}
+
 // GetUsedSecGroups - Trims out any security-groups that cannot be used. I.E not running, staging or bound
 func GetUsedSecGroups(allSecGroups []cfclient.SecGroup) []cfclient.SecGroup {
 	var secGroups []cfclient.SecGroup
@@ -85,4 +100,15 @@ func GetUsedSecGroups(allSecGroups []cfclient.SecGroup) []cfclient.SecGroup {
 		}
 	}
 	return secGroups
+}
+
+// GetFirewallRules - Returns a concise list of firewall rules for all security groups
+func GetFirewallRules(secGroups []cfclient.SecGroup) []FirewallRule {
+	var firewallRules []FirewallRule
+	for _, secGroup := range secGroups {
+		for _, secGroupRule := range secGroup.Rules {
+			firewallRules, _ = ProcessRule(secGroupRule, firewallRules)
+		}
+	}
+	return firewallRules
 }

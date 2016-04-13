@@ -4,31 +4,54 @@ import (
 	"fmt"
 	"github.com/FidelityInternational/virgil/utility"
 	"github.com/cloudfoundry-community/go-cfclient"
+	"github.com/codegangsta/cli"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"os"
 )
 
 func main() {
-	var (
-		systemDomain  = os.Getenv("CF_SYSTEM_DOMAIN")
-		firewallRules []utility.FirewallRule
-	)
-	c := &cfclient.Config{
-		ApiAddress:   fmt.Sprintf("https://api.%s", systemDomain),
-		LoginAddress: fmt.Sprintf("https://login.%s", systemDomain),
-		Username:     os.Getenv("CF_USERNAME"),
-		Password:     os.Getenv("CF_PASSWORD"),
+	var systemDomain, cfUser, cfPassword string
+	app := cli.NewApp()
+	app.Name = "virgil"
+	app.Usage = "A CLI App to return a list of firewall rules based on Cloud Foundry Security Groups"
+	app.UsageText = "virgil [options] output_file"
+	app.Version = "1.0.0"
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:        "cf-sys-domain, csd",
+			Usage:       "Cloud Foundry System Domain",
+			Destination: &systemDomain,
+		},
+		cli.StringFlag{
+			Name:        "cf-user, cu",
+			Usage:       "Cloud Foundry Admin User",
+			Destination: &cfUser,
+		},
+		cli.StringFlag{
+			Name:        "cf-password, cp",
+			Usage:       "Cloud Foundry Admin Password",
+			Destination: &cfPassword,
+		},
 	}
-	client := cfclient.NewClient(c)
-	allSecGroups := client.ListSecGroups()
-	secGroups := utility.GetUsedSecGroups(allSecGroups)
-	for _, secGroup := range secGroups {
-		for _, secGroupRule := range secGroup.Rules {
-			firewallRules, _ = utility.ProcessRule(secGroupRule, firewallRules)
+	app.Action = func(c *cli.Context) {
+		if systemDomain == "" || cfUser == "" || cfPassword == "" || c.NArg() == 0 {
+			fmt.Println("cf-sys-domain, cf-user, cf-password and output_file must all be set")
+			os.Exit(1)
 		}
+		fmt.Println("args", c.Args().First())
+		config := &cfclient.Config{
+			ApiAddress:   fmt.Sprintf("https://api.%s", systemDomain),
+			LoginAddress: fmt.Sprintf("https://login.%s", systemDomain),
+			Username:     cfUser,
+			Password:     cfPassword,
+		}
+		client := cfclient.NewClient(config)
+		allSecGroups := client.ListSecGroups()
+		secGroups := utility.GetUsedSecGroups(allSecGroups)
+		firewallRules := utility.GetFirewallRules(secGroups)
+		yml, _ := yaml.Marshal(&firewallRules)
+		ioutil.WriteFile(c.Args()[0], []byte(fmt.Sprintf("---\n%v", string(yml))), os.FileMode(0444))
 	}
-	for _, rule := range firewallRules {
-		fmt.Println(rule.Port)
-		fmt.Println(rule.Protocol)
-		fmt.Println(rule.Destination)
-	}
+	app.Run(os.Args)
 }

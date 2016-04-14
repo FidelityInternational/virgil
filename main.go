@@ -41,13 +41,20 @@ func main() {
 		}
 		fmt.Println("args", c.Args().First())
 		config := &cfclient.Config{
-			ApiAddress:   fmt.Sprintf("https://api.%s", systemDomain),
-			LoginAddress: fmt.Sprintf("https://login.%s", systemDomain),
-			Username:     cfUser,
-			Password:     cfPassword,
+			ApiAddress: fmt.Sprintf("https://api.%s", systemDomain),
+			Username:   cfUser,
+			Password:   cfPassword,
 		}
-		client := cfclient.NewClient(config)
-		allSecGroups := client.ListSecGroups()
+		client, err := cfclient.NewClient(config)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		allSecGroups, err := client.ListSecGroups()
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
 		secGroups := utility.GetUsedSecGroups(allSecGroups)
 		firewallRules := utility.GetFirewallRules(secGroups)
 		yml, _ := yaml.Marshal(&firewallRules)

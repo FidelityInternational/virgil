@@ -102,6 +102,7 @@ var _ = Describe("#PortExpand", func() {
 })
 
 var _ = Describe("#ProcessRule", func() {
+	var source = []string{"1.2.3.4", "2.3.4.5"}
 	Context("when ports can be expanded", func() {
 		It("returns valid firewall rules", func() {
 			var securityGroupRule1 = cfclient.SecGroupRule{
@@ -115,28 +116,28 @@ var _ = Describe("#ProcessRule", func() {
 				Destination: "2.2.2.2",
 			}
 
-			rules, err := utility.ProcessRule(securityGroupRule1, []utility.FirewallRule{})
+			rules, err := utility.ProcessRule(securityGroupRule1, []utility.FirewallRule{}, source)
 			Expect(err).To(BeNil())
 			Expect(rules).To(HaveLen(7))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "12", Protocol: "tcp", Destination: []string{"1.1.1.1"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "15", Protocol: "tcp", Destination: []string{"1.1.1.1"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "16", Protocol: "tcp", Destination: []string{"1.1.1.1"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "17", Protocol: "tcp", Destination: []string{"1.1.1.1"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "18", Protocol: "tcp", Destination: []string{"1.1.1.1"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "19", Protocol: "tcp", Destination: []string{"1.1.1.1"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "20", Protocol: "tcp", Destination: []string{"1.1.1.1"}}))
-			Expect(rules).ToNot(ContainElement(utility.FirewallRule{Port: "21", Protocol: "tcp", Destination: []string{"2.2.2.2"}}))
-			rules, err = utility.ProcessRule(securityGroupRule2, rules)
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "12", Protocol: "tcp", Destination: []string{"1.1.1.1"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "15", Protocol: "tcp", Destination: []string{"1.1.1.1"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "16", Protocol: "tcp", Destination: []string{"1.1.1.1"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "17", Protocol: "tcp", Destination: []string{"1.1.1.1"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "18", Protocol: "tcp", Destination: []string{"1.1.1.1"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "19", Protocol: "tcp", Destination: []string{"1.1.1.1"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "20", Protocol: "tcp", Destination: []string{"1.1.1.1"}, Source: source}))
+			Expect(rules).ToNot(ContainElement(utility.FirewallRule{Port: "21", Protocol: "tcp", Destination: []string{"2.2.2.2"}, Source: source}))
+			rules, err = utility.ProcessRule(securityGroupRule2, rules, source)
 			Expect(err).To(BeNil())
 			Expect(rules).To(HaveLen(8))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "12", Protocol: "tcp", Destination: []string{"1.1.1.1", "2.2.2.2"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "15", Protocol: "tcp", Destination: []string{"1.1.1.1"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "16", Protocol: "tcp", Destination: []string{"1.1.1.1"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "17", Protocol: "tcp", Destination: []string{"1.1.1.1"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "18", Protocol: "tcp", Destination: []string{"1.1.1.1", "2.2.2.2"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "19", Protocol: "tcp", Destination: []string{"1.1.1.1", "2.2.2.2"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "20", Protocol: "tcp", Destination: []string{"1.1.1.1", "2.2.2.2"}}))
-			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "21", Protocol: "tcp", Destination: []string{"2.2.2.2"}}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "12", Protocol: "tcp", Destination: []string{"1.1.1.1", "2.2.2.2"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "15", Protocol: "tcp", Destination: []string{"1.1.1.1"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "16", Protocol: "tcp", Destination: []string{"1.1.1.1"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "17", Protocol: "tcp", Destination: []string{"1.1.1.1"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "18", Protocol: "tcp", Destination: []string{"1.1.1.1", "2.2.2.2"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "19", Protocol: "tcp", Destination: []string{"1.1.1.1", "2.2.2.2"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "20", Protocol: "tcp", Destination: []string{"1.1.1.1", "2.2.2.2"}, Source: source}))
+			Expect(rules).To(ContainElement(utility.FirewallRule{Port: "21", Protocol: "tcp", Destination: []string{"2.2.2.2"}, Source: source}))
 		})
 	})
 
@@ -147,7 +148,7 @@ var _ = Describe("#ProcessRule", func() {
 				Protocol:    "tcp",
 				Destination: "1.1.1.1",
 			}
-			rules, err := utility.ProcessRule(securityGroupRule1, []utility.FirewallRule{})
+			rules, err := utility.ProcessRule(securityGroupRule1, []utility.FirewallRule{}, source)
 			Expect(rules).To(HaveLen(0))
 			Expect(err).To(MatchError("Port range 21-20 was invalid"))
 		})
@@ -244,6 +245,8 @@ var _ = Describe("#GetUsedSecGroups", func() {
 })
 
 var _ = Describe("#GetFirewallRules", func() {
+	var source = []string{"1.2.3.4", "2.3.4.5"}
+
 	It("Returns an array of Firewall Rules", func() {
 		var securityGroups = []cfclient.SecGroup{
 			cfclient.SecGroup{
@@ -313,17 +316,17 @@ var _ = Describe("#GetFirewallRules", func() {
 				},
 			},
 		}
-		rules := utility.GetFirewallRules(securityGroups)
+		rules := utility.GetFirewallRules(source, securityGroups)
 		Expect(rules).To(HaveLen(9))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "1", Protocol: "tcp", Destination: []string{"2.2.2.2", "4.4.4.4"}}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "3", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "4", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3", "4.4.4.4"}}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "5", Protocol: "tcp", Destination: []string{"4.4.4.4"}}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "6", Protocol: "tcp", Destination: []string{"4.4.4.4"}}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "7", Protocol: "tcp", Destination: []string{"4.4.4.4"}}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "8", Protocol: "tcp", Destination: []string{"5.5.5.5"}}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "udp", Destination: []string{"1.1.1.1"}}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "1", Protocol: "tcp", Destination: []string{"2.2.2.2", "4.4.4.4"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "3", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "4", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3", "4.4.4.4"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "5", Protocol: "tcp", Destination: []string{"4.4.4.4"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "6", Protocol: "tcp", Destination: []string{"4.4.4.4"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "7", Protocol: "tcp", Destination: []string{"4.4.4.4"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "8", Protocol: "tcp", Destination: []string{"5.5.5.5"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "udp", Destination: []string{"1.1.1.1"}, Source: source}))
 	})
 })
 

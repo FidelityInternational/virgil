@@ -12,6 +12,7 @@ type FirewallRule struct {
 	Port        string
 	Destination []string
 	Protocol    string
+	Source      []string
 }
 
 // PortExpand - serperates port string into array, for example 2,5-7 becomes {2 5 6 7}
@@ -50,7 +51,7 @@ func PortExpand(portString string) ([]string, error) {
 }
 
 // ProcessRule - returns a concise list of firewall rules for one security group rule
-func ProcessRule(secGroupRule cfclient.SecGroupRule, firewallRules []FirewallRule) ([]FirewallRule, error) {
+func ProcessRule(secGroupRule cfclient.SecGroupRule, firewallRules []FirewallRule, source []string) ([]FirewallRule, error) {
 	ports, err := PortExpand(secGroupRule.Ports)
 	if err != nil {
 		return []FirewallRule{}, err
@@ -70,6 +71,7 @@ func ProcessRule(secGroupRule cfclient.SecGroupRule, firewallRules []FirewallRul
 				Port:        port,
 				Protocol:    secGroupRule.Protocol,
 				Destination: []string{secGroupRule.Destination},
+				Source:      source,
 			}
 			firewallRules = append(firewallRules, newRules)
 		}
@@ -103,11 +105,11 @@ func GetUsedSecGroups(allSecGroups []cfclient.SecGroup) []cfclient.SecGroup {
 }
 
 // GetFirewallRules - Returns a concise list of firewall rules for all security groups
-func GetFirewallRules(secGroups []cfclient.SecGroup) []FirewallRule {
+func GetFirewallRules(source []string, secGroups []cfclient.SecGroup) []FirewallRule {
 	var firewallRules []FirewallRule
 	for _, secGroup := range secGroups {
 		for _, secGroupRule := range secGroup.Rules {
-			firewallRules, _ = ProcessRule(secGroupRule, firewallRules)
+			firewallRules, _ = ProcessRule(secGroupRule, firewallRules, source)
 		}
 	}
 	return firewallRules

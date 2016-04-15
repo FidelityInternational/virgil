@@ -7,6 +7,12 @@ import (
 	"strings"
 )
 
+// FirewallRules - A collection of Firewall Rules with version
+type FirewallRules struct {
+	SchemaVersion string         `yaml:"schema_version"`
+	FirewallRules []FirewallRule `yaml:"firewall_rules"`
+}
+
 // FirewallRule struct
 type FirewallRule struct {
 	Port        string
@@ -105,11 +111,12 @@ func GetUsedSecGroups(allSecGroups []cfclient.SecGroup) []cfclient.SecGroup {
 }
 
 // GetFirewallRules - Returns a concise list of firewall rules for all security groups
-func GetFirewallRules(source []string, secGroups []cfclient.SecGroup) []FirewallRule {
-	var firewallRules []FirewallRule
+func GetFirewallRules(source []string, secGroups []cfclient.SecGroup) FirewallRules {
+	var firewallRules FirewallRules
+	firewallRules.SchemaVersion = "1"
 	for _, secGroup := range secGroups {
 		for _, secGroupRule := range secGroup.Rules {
-			firewallRules, _ = ProcessRule(secGroupRule, firewallRules, source)
+			firewallRules.FirewallRules, _ = ProcessRule(secGroupRule, firewallRules.FirewallRules, source)
 		}
 	}
 	return firewallRules

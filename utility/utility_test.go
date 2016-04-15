@@ -316,7 +316,9 @@ var _ = Describe("#GetFirewallRules", func() {
 				},
 			},
 		}
-		rules := utility.GetFirewallRules(source, securityGroups)
+		policy := utility.GetFirewallRules(source, securityGroups)
+		rules := policy.FirewallRules
+		Expect(policy.SchemaVersion).To(Equal("1"))
 		Expect(rules).To(HaveLen(9))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "1", Protocol: "tcp", Destination: []string{"2.2.2.2", "4.4.4.4"}, Source: source}))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}, Source: source}))

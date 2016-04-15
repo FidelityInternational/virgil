@@ -102,7 +102,7 @@ func main() {
 		secGroups := utility.GetUsedSecGroups(allSecGroups)
 		firewallRules := utility.GetFirewallRules(sources, secGroups)
 		yml, _ := yaml.Marshal(&firewallRules)
-		ioutil.WriteFile(c.Args()[0], []byte(fmt.Sprintf("---\nschema_version: \"1\"\n%v", string(yml))), os.FileMode(0444))
+		ioutil.WriteFile(c.Args()[0], []byte(fmt.Sprintf("---\n%v", string(yml))), os.FileMode(0444))
 	}
 	app.Run(os.Args)
 }

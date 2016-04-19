@@ -123,11 +123,18 @@ func GetUsedSecGroups(allSecGroups []cfclient.SecGroup) []cfclient.SecGroup {
 
 // GetFirewallRules - Returns a concise list of firewall rules for all security groups
 func GetFirewallRules(source []string, secGroups []cfclient.SecGroup) FirewallRules {
-	var firewallRules FirewallRules
+	var (
+		firewallRules, fwRules FirewallRules
+		err                    error
+	)
 	firewallRules.SchemaVersion = "1"
 	for _, secGroup := range secGroups {
 		for _, secGroupRule := range secGroup.Rules {
-			firewallRules.FirewallRules, _ = ProcessRule(secGroupRule, firewallRules.FirewallRules, source)
+			fwRules.FirewallRules, err = ProcessRule(secGroupRule, firewallRules.FirewallRules, source)
+			if err != nil {
+				continue
+			}
+			firewallRules.FirewallRules = fwRules.FirewallRules
 		}
 	}
 	return firewallRules

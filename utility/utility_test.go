@@ -337,34 +337,89 @@ var _ = Describe("#ByPort", func() {
 	It("sorts FirewallRules in order by port", func() {
 		var firewallRules = []utility.FirewallRule{
 			utility.FirewallRule{
-				Port: "1",
+				Port:     "5",
+				Protocol: "udp",
 			},
 			utility.FirewallRule{
-				Port: "5",
+				Port:     "1",
+				Protocol: "tcp",
 			},
 			utility.FirewallRule{
-				Port: "3",
+				Port:     "5",
+				Protocol: "tcp",
 			},
 			utility.FirewallRule{
-				Port: "9",
+				Port:     "1",
+				Protocol: "udp",
 			},
 			utility.FirewallRule{
-				Port: "2",
+				Port:     "3",
+				Protocol: "tcp",
+			},
+			utility.FirewallRule{
+				Port:     "9",
+				Protocol: "udp",
+			},
+			utility.FirewallRule{
+				Port:     "9",
+				Protocol: "tcp",
+			},
+			utility.FirewallRule{
+				Port:     "2",
+				Protocol: "tcp",
+			},
+			utility.FirewallRule{
+				Port:     "2",
+				Protocol: "udp",
+			},
+			utility.FirewallRule{
+				Port:     "3",
+				Protocol: "udp",
 			},
 		}
-		Expect(firewallRules).To(HaveLen(5))
-		Expect(firewallRules[0].Port).To(Equal("1"))
-		Expect(firewallRules[1].Port).To(Equal("5"))
-		Expect(firewallRules[2].Port).To(Equal("3"))
-		Expect(firewallRules[3].Port).To(Equal("9"))
-		Expect(firewallRules[4].Port).To(Equal("2"))
+		Expect(firewallRules).To(HaveLen(10))
+		Expect(firewallRules[0].Port).To(Equal("5"))
+		Expect(firewallRules[0].Protocol).To(Equal("udp"))
+		Expect(firewallRules[1].Port).To(Equal("1"))
+		Expect(firewallRules[1].Protocol).To(Equal("tcp"))
+		Expect(firewallRules[2].Port).To(Equal("5"))
+		Expect(firewallRules[2].Protocol).To(Equal("tcp"))
+		Expect(firewallRules[3].Port).To(Equal("1"))
+		Expect(firewallRules[3].Protocol).To(Equal("udp"))
+		Expect(firewallRules[4].Port).To(Equal("3"))
+		Expect(firewallRules[4].Protocol).To(Equal("tcp"))
+		Expect(firewallRules[5].Port).To(Equal("9"))
+		Expect(firewallRules[5].Protocol).To(Equal("udp"))
+		Expect(firewallRules[6].Port).To(Equal("9"))
+		Expect(firewallRules[6].Protocol).To(Equal("tcp"))
+		Expect(firewallRules[7].Port).To(Equal("2"))
+		Expect(firewallRules[7].Protocol).To(Equal("tcp"))
+		Expect(firewallRules[8].Port).To(Equal("2"))
+		Expect(firewallRules[8].Protocol).To(Equal("udp"))
+		Expect(firewallRules[9].Port).To(Equal("3"))
+		Expect(firewallRules[9].Protocol).To(Equal("udp"))
 		sort.Sort(utility.ByPort(firewallRules))
-		Expect(firewallRules).To(HaveLen(5))
+		Expect(firewallRules).To(HaveLen(10))
 		Expect(firewallRules[0].Port).To(Equal("1"))
+		Expect(firewallRules[0].Protocol).To(Equal("tcp"))
 		Expect(firewallRules[1].Port).To(Equal("2"))
+		Expect(firewallRules[1].Protocol).To(Equal("tcp"))
 		Expect(firewallRules[2].Port).To(Equal("3"))
+		Expect(firewallRules[2].Protocol).To(Equal("tcp"))
 		Expect(firewallRules[3].Port).To(Equal("5"))
+		Expect(firewallRules[3].Protocol).To(Equal("tcp"))
 		Expect(firewallRules[4].Port).To(Equal("9"))
+		Expect(firewallRules[4].Protocol).To(Equal("tcp"))
+		Expect(firewallRules[5].Port).To(Equal("1"))
+		Expect(firewallRules[5].Protocol).To(Equal("udp"))
+		Expect(firewallRules[6].Port).To(Equal("2"))
+		Expect(firewallRules[6].Protocol).To(Equal("udp"))
+		Expect(firewallRules[7].Port).To(Equal("3"))
+		Expect(firewallRules[7].Protocol).To(Equal("udp"))
+		Expect(firewallRules[8].Port).To(Equal("5"))
+		Expect(firewallRules[8].Protocol).To(Equal("udp"))
+		Expect(firewallRules[9].Port).To(Equal("9"))
+		Expect(firewallRules[9].Protocol).To(Equal("udp"))
 	})
 })
 

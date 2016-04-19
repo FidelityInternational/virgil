@@ -27,6 +27,11 @@ type ByPort []FirewallRule
 func (p ByPort) Len() int      { return len(p) }
 func (p ByPort) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 func (p ByPort) Less(i, j int) bool {
+	if strings.EqualFold(p[i].Protocol, "TCP") && strings.EqualFold(p[j].Protocol, "UDP") {
+		return true
+	} else if strings.EqualFold(p[i].Protocol, "UDP") && strings.EqualFold(p[j].Protocol, "TCP") {
+		return false
+	}
 	portIInt, _ := strconv.Atoi(p[i].Port)
 	portJInt, _ := strconv.Atoi(p[j].Port)
 	return portIInt < portJInt

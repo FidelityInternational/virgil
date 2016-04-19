@@ -284,7 +284,7 @@ var _ = Describe("#GetFirewallRules", func() {
 				SpacesData: []cfclient.SpaceResource{},
 			},
 			cfclient.SecGroup{
-				Guid:    "3",
+				Guid:    "6",
 				Name:    "test-sec-group6",
 				Running: false,
 				Staging: true,
@@ -329,21 +329,98 @@ var _ = Describe("#GetFirewallRules", func() {
 					},
 				},
 			},
+			cfclient.SecGroup{
+				Guid:    "7",
+				Name:    "test-sec-group7",
+				Running: false,
+				Staging: false,
+				Rules: []cfclient.SecGroupRule{
+					cfclient.SecGroupRule{
+						Protocol:    "tcp",
+						Ports:       "99",
+						Destination: "9.9.9.9",
+					},
+				},
+				SpacesData: []cfclient.SpaceResource{
+					cfclient.SpaceResource{
+						Meta:   cfclient.Meta{Guid: "1"},
+						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+					},
+				},
+			},
+			cfclient.SecGroup{
+				Guid:    "8",
+				Name:    "test-sec-group8",
+				Running: false,
+				Staging: false,
+				Rules: []cfclient.SecGroupRule{
+					cfclient.SecGroupRule{
+						Protocol:    "tcp",
+						Ports:       "100",
+						Destination: "9.9.9.9",
+					},
+				},
+				SpacesData: []cfclient.SpaceResource{
+					cfclient.SpaceResource{
+						Meta:   cfclient.Meta{Guid: "1"},
+						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+					},
+				},
+			},
+			cfclient.SecGroup{
+				Guid:    "9",
+				Name:    "test-sec-group9",
+				Running: false,
+				Staging: false,
+				Rules: []cfclient.SecGroupRule{
+					cfclient.SecGroupRule{
+						Protocol:    "tcp",
+						Ports:       "110-120",
+						Destination: "9.9.9.9",
+					},
+				},
+				SpacesData: []cfclient.SpaceResource{
+					cfclient.SpaceResource{
+						Meta:   cfclient.Meta{Guid: "1"},
+						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+					},
+				},
+			},
+			cfclient.SecGroup{
+				Guid:    "10",
+				Name:    "test-sec-group10",
+				Running: false,
+				Staging: false,
+				Rules: []cfclient.SecGroupRule{
+					cfclient.SecGroupRule{
+						Protocol:    "tcp",
+						Ports:       "116",
+						Destination: "11.1.1.1",
+					},
+				},
+				SpacesData: []cfclient.SpaceResource{
+					cfclient.SpaceResource{
+						Meta:   cfclient.Meta{Guid: "1"},
+						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+					},
+				},
+			},
 		}
 		policy := utility.GetFirewallRules(source, securityGroups)
 		rules := policy.FirewallRules
 		Expect(policy.SchemaVersion).To(Equal("1"))
-		Expect(rules).To(HaveLen(10))
+		Expect(rules).To(HaveLen(11))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "1", Protocol: "tcp", Destination: []string{"2.2.2.2", "4.4.4.4"}, Source: source}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}, Source: source}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "3", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2-3", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}, Source: source}))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "4", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3", "4.4.4.4"}, Source: source}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "5", Protocol: "tcp", Destination: []string{"4.4.4.4"}, Source: source}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "6", Protocol: "tcp", Destination: []string{"4.4.4.4"}, Source: source}))
-		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "7", Protocol: "tcp", Destination: []string{"4.4.4.4"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "5-7", Protocol: "tcp", Destination: []string{"4.4.4.4"}, Source: source}))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "8", Protocol: "tcp", Destination: []string{"5.5.5.5"}, Source: source}))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "udp", Destination: []string{"1.1.1.1"}, Source: source}))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "", Protocol: "all", Destination: []string{"9.9.9.9"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "99-100", Protocol: "tcp", Destination: []string{"9.9.9.9"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "110-115", Protocol: "tcp", Destination: []string{"9.9.9.9"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "117-120", Protocol: "tcp", Destination: []string{"9.9.9.9"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "116", Protocol: "tcp", Destination: []string{"9.9.9.9", "11.1.1.1"}, Source: source}))
 	})
 })
 

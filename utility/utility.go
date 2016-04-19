@@ -3,6 +3,8 @@ package utility
 import (
 	"fmt"
 	"github.com/cloudfoundry-community/go-cfclient"
+	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -151,5 +153,45 @@ func GetFirewallRules(source []string, secGroups []cfclient.SecGroup) FirewallRu
 			firewallRules.FirewallRules = fwRules.FirewallRules
 		}
 	}
-	return firewallRules
+	return compressDuplicateDestinations(firewallRules)
+}
+
+func compressDuplicateDestinations(firewallRules FirewallRules) FirewallRules {
+	var firewallRulesResult []FirewallRule
+	schema := firewallRules.SchemaVersion
+	fwRules := firewallRules.FirewallRules
+	sort.Sort(ByPort(fwRules))
+	for i, fwRule := range fwRules {
+		if i == 0 {
+			firewallRulesResult = append(firewallRulesResult, fwRule)
+			continue
+		}
+		prevRule := fwRules[i-1]
+		if strings.EqualFold(fwRule.Protocol, "ALL") || fwRule.Protocol != prevRule.Protocol {
+			firewallRulesResult = append(firewallRulesResult, fwRule)
+			continue
+		}
+		rulePortInt, _ := strconv.Atoi(fwRule.Port)
+		prevRulePorts := strings.Split(prevRule.Port, "-")
+		prevRuleStartPort := prevRulePorts[0]
+		prevRuleEndPort := ""
+		if len(prevRulePorts) > 1 {
+			prevRuleEndPort = prevRulePorts[1]
+		}
+		prevRulePortInt, _ := strconv.Atoi(prevRuleStartPort)
+		if prevRuleEndPort != "" {
+			prevRulePortInt, _ = strconv.Atoi(prevRuleEndPort)
+		}
+		if rulePortInt == prevRulePortInt+1 {
+			if reflect.DeepEqual(fwRule.Destination, prevRule.Destination) {
+				previousPort := strings.Split(firewallRulesResult[len(firewallRulesResult)-1].Port, "-")[0]
+				firewallRulesResult[len(firewallRulesResult)-1].Port = fmt.Sprintf("%s-%s", previousPort, fwRule.Port)
+			} else {
+				firewallRulesResult = append(firewallRulesResult, fwRule)
+			}
+		} else {
+			firewallRulesResult = append(firewallRulesResult, fwRule)
+		}
+	}
+	return FirewallRules{SchemaVersion: schema, FirewallRules: firewallRulesResult}
 }

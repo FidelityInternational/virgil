@@ -5,6 +5,7 @@ import (
 	"github.com/cloudfoundry-community/go-cfclient"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"sort"
 )
 
 var _ = Describe("#PortExpand", func() {
@@ -329,6 +330,41 @@ var _ = Describe("#GetFirewallRules", func() {
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "7", Protocol: "tcp", Destination: []string{"4.4.4.4"}, Source: source}))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "8", Protocol: "tcp", Destination: []string{"5.5.5.5"}, Source: source}))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "udp", Destination: []string{"1.1.1.1"}, Source: source}))
+	})
+})
+
+var _ = Describe("#ByPort", func() {
+	It("sorts FirewallRules in order by port", func() {
+		var firewallRules = []utility.FirewallRule{
+			utility.FirewallRule{
+				Port: "1",
+			},
+			utility.FirewallRule{
+				Port: "5",
+			},
+			utility.FirewallRule{
+				Port: "3",
+			},
+			utility.FirewallRule{
+				Port: "9",
+			},
+			utility.FirewallRule{
+				Port: "2",
+			},
+		}
+		Expect(firewallRules).To(HaveLen(5))
+		Expect(firewallRules[0].Port).To(Equal("1"))
+		Expect(firewallRules[1].Port).To(Equal("5"))
+		Expect(firewallRules[2].Port).To(Equal("3"))
+		Expect(firewallRules[3].Port).To(Equal("9"))
+		Expect(firewallRules[4].Port).To(Equal("2"))
+		sort.Sort(utility.ByPort(firewallRules))
+		Expect(firewallRules).To(HaveLen(5))
+		Expect(firewallRules[0].Port).To(Equal("1"))
+		Expect(firewallRules[1].Port).To(Equal("2"))
+		Expect(firewallRules[2].Port).To(Equal("3"))
+		Expect(firewallRules[3].Port).To(Equal("5"))
+		Expect(firewallRules[4].Port).To(Equal("9"))
 	})
 })
 

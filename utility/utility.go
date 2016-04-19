@@ -21,6 +21,17 @@ type FirewallRule struct {
 	Source      []string
 }
 
+// ByPort - impliments sort.Interface for []FirewallRule bases on the Port field
+type ByPort []FirewallRule
+
+func (p ByPort) Len() int      { return len(p) }
+func (p ByPort) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+func (p ByPort) Less(i, j int) bool {
+	portIInt, _ := strconv.Atoi(p[i].Port)
+	portJInt, _ := strconv.Atoi(p[j].Port)
+	return portIInt < portJInt
+}
+
 // PortExpand - serperates port string into array, for example 2,5-7 becomes {2 5 6 7}
 func PortExpand(portString string) ([]string, error) {
 	var ports []string

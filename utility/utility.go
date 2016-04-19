@@ -74,6 +74,15 @@ func PortExpand(portString string) ([]string, error) {
 
 // ProcessRule - returns a concise list of firewall rules for one security group rule
 func ProcessRule(secGroupRule cfclient.SecGroupRule, firewallRules []FirewallRule, source []string) ([]FirewallRule, error) {
+	if strings.EqualFold(secGroupRule.Protocol, "all") {
+		newRules := FirewallRule{
+			Protocol:    secGroupRule.Protocol,
+			Destination: []string{secGroupRule.Destination},
+			Source:      source,
+		}
+		firewallRules = append(firewallRules, newRules)
+		return firewallRules, nil
+	}
 	ports, err := PortExpand(secGroupRule.Ports)
 	if err != nil {
 		return []FirewallRule{}, err

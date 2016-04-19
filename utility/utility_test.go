@@ -284,6 +284,19 @@ var _ = Describe("#GetFirewallRules", func() {
 				SpacesData: []cfclient.SpaceResource{},
 			},
 			cfclient.SecGroup{
+				Guid:    "3",
+				Name:    "test-sec-group6",
+				Running: false,
+				Staging: true,
+				Rules: []cfclient.SecGroupRule{
+					cfclient.SecGroupRule{
+						Protocol:    "all",
+						Destination: "9.9.9.9",
+					},
+				},
+				SpacesData: []cfclient.SpaceResource{},
+			},
+			cfclient.SecGroup{
 				Guid:    "4",
 				Name:    "test-sec-group4",
 				Running: true,
@@ -320,7 +333,7 @@ var _ = Describe("#GetFirewallRules", func() {
 		policy := utility.GetFirewallRules(source, securityGroups)
 		rules := policy.FirewallRules
 		Expect(policy.SchemaVersion).To(Equal("1"))
-		Expect(rules).To(HaveLen(9))
+		Expect(rules).To(HaveLen(10))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "1", Protocol: "tcp", Destination: []string{"2.2.2.2", "4.4.4.4"}, Source: source}))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}, Source: source}))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "3", Protocol: "tcp", Destination: []string{"2.2.2.2", "3.3.3.3"}, Source: source}))
@@ -330,6 +343,7 @@ var _ = Describe("#GetFirewallRules", func() {
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "7", Protocol: "tcp", Destination: []string{"4.4.4.4"}, Source: source}))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "8", Protocol: "tcp", Destination: []string{"5.5.5.5"}, Source: source}))
 		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "2", Protocol: "udp", Destination: []string{"1.1.1.1"}, Source: source}))
+		Expect(rules).To(ContainElement(utility.FirewallRule{Port: "", Protocol: "all", Destination: []string{"9.9.9.9"}, Source: source}))
 	})
 })
 

@@ -23,7 +23,7 @@ type FirewallRule struct {
 	Source      []string
 }
 
-// ByPort - impliments sort.Interface for []FirewallRule bases on the Port field
+// ByPort - implements sort.Interface for []FirewallRule bases on the Port field
 type ByPort []FirewallRule
 
 func (p ByPort) Len() int      { return len(p) }

@@ -159,41 +159,41 @@ var _ = Describe("#ProcessRule", func() {
 var _ = Describe("#GetUsedSecGroups", func() {
 	It("returns an array of in use security groups", func() {
 		var securityGroups = []cfclient.SecGroup{
-			cfclient.SecGroup{
+			{
 				Guid:       "1",
 				Name:       "test-sec-group1",
 				Running:    false,
 				Staging:    false,
 				SpacesData: []cfclient.SpaceResource{},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:       "2",
 				Name:       "test-sec-group2",
 				Running:    true,
 				Staging:    false,
 				SpacesData: []cfclient.SpaceResource{},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:       "3",
 				Name:       "test-sec-group3",
 				Running:    false,
 				Staging:    true,
 				SpacesData: []cfclient.SpaceResource{},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:       "4",
 				Name:       "test-sec-group4",
 				Running:    true,
 				Staging:    true,
 				SpacesData: []cfclient.SpaceResource{},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:    "5",
 				Name:    "test-sec-group5",
 				Running: false,
 				Staging: false,
 				SpacesData: []cfclient.SpaceResource{
-					cfclient.SpaceResource{
+					{
 						Meta:   cfclient.Meta{Guid: "1"},
 						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
 					},
@@ -236,7 +236,7 @@ var _ = Describe("#GetUsedSecGroups", func() {
 			Running: false,
 			Staging: false,
 			SpacesData: []cfclient.SpaceResource{
-				cfclient.SpaceResource{
+				{
 					Meta:   cfclient.Meta{Guid: "1"},
 					Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
 				},
@@ -250,18 +250,18 @@ var _ = Describe("#GetFirewallRules", func() {
 
 	It("Returns an array of Firewall Rules", func() {
 		var securityGroups = []cfclient.SecGroup{
-			cfclient.SecGroup{
+			{
 				Guid:    "2",
 				Name:    "test-sec-group2",
 				Running: true,
 				Staging: false,
 				Rules: []cfclient.SecGroupRule{
-					cfclient.SecGroupRule{
+					{
 						Protocol:    "tcp",
 						Ports:       "1,2-4",
 						Destination: "2.2.2.2",
 					},
-					cfclient.SecGroupRule{
+					{
 						Protocol:    "tcp",
 						Ports:       "8",
 						Destination: "5.5.5.5",
@@ -269,13 +269,13 @@ var _ = Describe("#GetFirewallRules", func() {
 				},
 				SpacesData: []cfclient.SpaceResource{},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:    "3",
 				Name:    "test-sec-group3",
 				Running: false,
 				Staging: true,
 				Rules: []cfclient.SecGroupRule{
-					cfclient.SecGroupRule{
+					{
 						Protocol:    "tcp",
 						Ports:       "2,3-4",
 						Destination: "3.3.3.3",
@@ -283,26 +283,26 @@ var _ = Describe("#GetFirewallRules", func() {
 				},
 				SpacesData: []cfclient.SpaceResource{},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:    "6",
 				Name:    "test-sec-group6",
 				Running: false,
 				Staging: true,
 				Rules: []cfclient.SecGroupRule{
-					cfclient.SecGroupRule{
+					{
 						Protocol:    "all",
 						Destination: "9.9.9.9",
 					},
 				},
 				SpacesData: []cfclient.SpaceResource{},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:    "4",
 				Name:    "test-sec-group4",
 				Running: true,
 				Staging: true,
 				Rules: []cfclient.SecGroupRule{
-					cfclient.SecGroupRule{
+					{
 						Protocol:    "tcp",
 						Ports:       "1,4-7",
 						Destination: "4.4.4.4",
@@ -310,96 +310,96 @@ var _ = Describe("#GetFirewallRules", func() {
 				},
 				SpacesData: []cfclient.SpaceResource{},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:    "5",
 				Name:    "test-sec-group5",
 				Running: false,
 				Staging: false,
 				Rules: []cfclient.SecGroupRule{
-					cfclient.SecGroupRule{
+					{
 						Protocol:    "udp",
 						Ports:       "2",
 						Destination: "1.1.1.1",
 					},
 				},
 				SpacesData: []cfclient.SpaceResource{
-					cfclient.SpaceResource{
+					{
 						Meta:   cfclient.Meta{Guid: "1"},
 						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
 					},
 				},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:    "7",
 				Name:    "test-sec-group7",
 				Running: false,
 				Staging: false,
 				Rules: []cfclient.SecGroupRule{
-					cfclient.SecGroupRule{
+					{
 						Protocol:    "tcp",
 						Ports:       "99",
 						Destination: "9.9.9.9",
 					},
 				},
 				SpacesData: []cfclient.SpaceResource{
-					cfclient.SpaceResource{
+					{
 						Meta:   cfclient.Meta{Guid: "1"},
 						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
 					},
 				},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:    "8",
 				Name:    "test-sec-group8",
 				Running: false,
 				Staging: false,
 				Rules: []cfclient.SecGroupRule{
-					cfclient.SecGroupRule{
+					{
 						Protocol:    "tcp",
 						Ports:       "100",
 						Destination: "9.9.9.9",
 					},
 				},
 				SpacesData: []cfclient.SpaceResource{
-					cfclient.SpaceResource{
+					{
 						Meta:   cfclient.Meta{Guid: "1"},
 						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
 					},
 				},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:    "9",
 				Name:    "test-sec-group9",
 				Running: false,
 				Staging: false,
 				Rules: []cfclient.SecGroupRule{
-					cfclient.SecGroupRule{
+					{
 						Protocol:    "tcp",
 						Ports:       "110-120",
 						Destination: "9.9.9.9",
 					},
 				},
 				SpacesData: []cfclient.SpaceResource{
-					cfclient.SpaceResource{
+					{
 						Meta:   cfclient.Meta{Guid: "1"},
 						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
 					},
 				},
 			},
-			cfclient.SecGroup{
+			{
 				Guid:    "10",
 				Name:    "test-sec-group10",
 				Running: false,
 				Staging: false,
 				Rules: []cfclient.SecGroupRule{
-					cfclient.SecGroupRule{
+					{
 						Protocol:    "tcp",
 						Ports:       "116",
 						Destination: "11.1.1.1",
 					},
 				},
 				SpacesData: []cfclient.SpaceResource{
-					cfclient.SpaceResource{
+					{
 						Meta:   cfclient.Meta{Guid: "1"},
 						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
 					},
@@ -427,43 +427,43 @@ var _ = Describe("#GetFirewallRules", func() {
 var _ = Describe("#ByPort", func() {
 	It("sorts FirewallRules in order by port", func() {
 		var firewallRules = []utility.FirewallRule{
-			utility.FirewallRule{
+			{
 				Port:     "5",
 				Protocol: "udp",
 			},
-			utility.FirewallRule{
+			{
 				Port:     "1",
 				Protocol: "tcp",
 			},
-			utility.FirewallRule{
+			{
 				Port:     "5",
 				Protocol: "tcp",
 			},
-			utility.FirewallRule{
+			{
 				Port:     "1",
 				Protocol: "udp",
 			},
-			utility.FirewallRule{
+			{
 				Port:     "3",
 				Protocol: "tcp",
 			},
-			utility.FirewallRule{
+			{
 				Port:     "9",
 				Protocol: "udp",
 			},
-			utility.FirewallRule{
+			{
 				Port:     "9",
 				Protocol: "tcp",
 			},
-			utility.FirewallRule{
+			{
 				Port:     "2",
 				Protocol: "tcp",
 			},
-			utility.FirewallRule{
+			{
 				Port:     "2",
 				Protocol: "udp",
 			},
-			utility.FirewallRule{
+			{
 				Port:     "3",
 				Protocol: "udp",
 			},

@@ -12,15 +12,30 @@ import (
 )
 
 var _ = Describe("#NewClient", func() {
-	It("returns a Bosh Client", func() {
-		config := &bosh.Config{
-			Username:          "example_user",
-			Password:          "example_password",
-			BoshURI:           "bosh_uri.example.com",
-			Port:              "25555",
-			SkipSSLValidation: false,
-		}
-		Expect(bosh.NewClient(config).Config).To(Equal(config))
+	Context("When SkipSSLValidation is false", func() {
+		It("returns a Bosh Client", func() {
+			config := &bosh.Config{
+				Username:          "example_user",
+				Password:          "example_password",
+				BoshURI:           "bosh_uri.example.com",
+				Port:              "25555",
+				SkipSSLValidation: false,
+			}
+			Expect(bosh.NewClient(config).Config).To(Equal(config))
+		})
+	})
+
+	Context("When SkipSSLValidation is false", func() {
+		It("returns a Bosh Client", func() {
+			config := &bosh.Config{
+				Username:          "example_user",
+				Password:          "example_password",
+				BoshURI:           "bosh_uri.example.com",
+				Port:              "25555",
+				SkipSSLValidation: true,
+			}
+			Expect(bosh.NewClient(config).Config).To(Equal(config))
+		})
 	})
 })
 
@@ -110,17 +125,19 @@ var _ = Describe("#GetRuntimeVMs", func() {
 		BeforeEach(func() {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.String() == "http://bosh_uri.example.com:25555/deployments/test-deployment-12345/vms?format=full" {
-					w.WriteHeader(200)
 					w.Header().Set("Content-Type", "application/json")
+					w.Header().Set("Location", "http://bosh_uri.example.com:25555/tasks/1")
+					w.WriteHeader(302)
 					fmt.Fprintln(w, `{"id":1,"state":"queued","description":"retrieve vm-stats","timestamp":1460639781,"result":"","user":"example_user"}`)
 				} else if r.URL.String() == "http://bosh_uri.example.com:25555/tasks/1" {
-					w.WriteHeader(200)
 					w.Header().Set("Content-Type", "application/json")
+					w.Header().Set("Location", "http://bosh_uri.example.com:25555/tasks/1/output?type=result")
+					w.WriteHeader(200)
 					// state must be "done" to prevent infinite loop
 					fmt.Fprintln(w, `{"id":1,"state":"done","description":"retrieve vm-stats","timestamp":1460639781,"result":"","user":"example_user"}`)
 				} else {
-					w.WriteHeader(200)
 					w.Header().Set("Content-Type", "application/json")
+					w.WriteHeader(200)
 					fmt.Fprintln(w, `{"vm_cid":"1","ips":["1.1.1.1"],"agent_id":"1","job_name":"not_dea-partition-d284104a9345228c01e2","index":0}
           {"vm_cid":"2","ips":["2.2.2.2"],"agent_id":"2","job_name":"dea-partition-d284104a9345228c01e2","index":1}
           {"vm_cid":"3","ips":["3.3.3.3"],"agent_id":"3","job_name":"not_diego_cell-partition-d284104a9345228c01e2","index":0}

@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/FidelityInternational/virgil/Godeps/_workspace/src/github.com/cloudfoundry-community/go-cfclient"
+	"github.com/FidelityInternational/virgil/Godeps/_workspace/src/github.com/codegangsta/cli"
+	"github.com/FidelityInternational/virgil/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/FidelityInternational/virgil/bosh"
 	"github.com/FidelityInternational/virgil/utility"
-	"github.com/cloudfoundry-community/go-cfclient"
-	"github.com/codegangsta/cli"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 )

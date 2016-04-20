@@ -3,9 +3,9 @@ package bosh_test
 import (
 	"crypto/tls"
 	"fmt"
+	. "github.com/FidelityInternational/virgil/Godeps/_workspace/src/github.com/onsi/ginkgo"
+	. "github.com/FidelityInternational/virgil/Godeps/_workspace/src/github.com/onsi/gomega"
 	"github.com/FidelityInternational/virgil/bosh"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"net/http"
 	"net/http/httptest"
 	"net/url"

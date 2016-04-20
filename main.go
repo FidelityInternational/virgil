@@ -24,7 +24,7 @@ func main() {
 	app.Version = "1.0.0"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:        "cf-sys-domain, csd",
+			Name:        "cf-system-domain, csd",
 			Usage:       "Cloud Foundry System Domain",
 			Destination: &systemDomain,
 		},
@@ -66,8 +66,8 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
-		if systemDomain == "" || cfUser == "" || cfPassword == "" || c.NArg() == 0 {
-			fmt.Println("cf-sys-domain, cf-user, cf-password and output_file must all be set")
+		if systemDomain == "" || cfUser == "" || cfPassword == "" || c.NArg() == 0 || boshUser == "" || boshPassword == "" || boshURI == "" {
+			fmt.Println("cf-system-domain, cf-user, cf-password, bosh-user, bosh-password, bosh-uri and output_file must all be set")
 			os.Exit(1)
 		}
 		config := &cfclient.Config{
@@ -76,11 +76,6 @@ func main() {
 			Password:          cfPassword,
 			SkipSslValidation: skipSSLValidation,
 		}
-		client, err := cfclient.NewClient(config)
-		if boshUser == "" || boshPassword == "" || boshURI == "" || boshPort == "" {
-			fmt.Println("BOSH user, password, URI and Port must all be set")
-			os.Exit(1)
-		}
 		boshConfig := &bosh.Config{
 			Username:          boshUser,
 			Password:          boshPassword,
@@ -88,6 +83,7 @@ func main() {
 			Port:              boshPort,
 			SkipSSLValidation: skipSSLValidation,
 		}
+		client, err := cfclient.NewClient(config)
 		boshClient := bosh.NewClient(boshConfig)
 		if err != nil {
 			fmt.Println(err.Error())

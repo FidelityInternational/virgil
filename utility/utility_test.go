@@ -405,6 +405,25 @@ var _ = Describe("#GetFirewallRules", func() {
 					},
 				},
 			},
+			{
+				Guid:    "11",
+				Name:    "test-sec-group11",
+				Running: false,
+				Staging: false,
+				Rules: []cfclient.SecGroupRule{
+					{
+						Protocol:    "tcp",
+						Ports:       "not_valid_ports",
+						Destination: "99.99.99.99",
+					},
+				},
+				SpacesData: []cfclient.SpaceResource{
+					{
+						Meta:   cfclient.Meta{Guid: "1"},
+						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+					},
+				},
+			},
 		}
 		policy := utility.GetFirewallRules(source, securityGroups)
 		rules := policy.FirewallRules

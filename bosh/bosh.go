@@ -1,7 +1,6 @@
 package bosh
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -206,37 +205,10 @@ func (c *Client) doRequest(r *request) (*http.Response, error) {
 }
 
 func (r *request) toHTTP() (*http.Request, error) {
-
-	// Check if we should encode the body
-	if r.body == nil && r.obj != nil {
-		b, err := encodeBody(r.obj)
-		if err != nil {
-			return nil, err
-		}
-		r.body = b
-	}
-
 	// Create the HTTP request
 	httpRequest, err := http.NewRequest(r.method, r.url, r.body)
 	httpRequest.SetBasicAuth(r.username, r.password)
 	return httpRequest, err
-}
-
-// decodeBody is used to JSON decode a body
-func decodeBody(resp *http.Response, out interface{}) error {
-	defer resp.Body.Close()
-	dec := json.NewDecoder(resp.Body)
-	return dec.Decode(out)
-}
-
-// encodeBody is used to encode a request body
-func encodeBody(obj interface{}) (io.Reader, error) {
-	buf := bytes.NewBuffer(nil)
-	enc := json.NewEncoder(buf)
-	if err := enc.Encode(obj); err != nil {
-		return nil, err
-	}
-	return buf, nil
 }
 
 func (c *Client) isTaskComplete(taskState TaskState) TaskState {

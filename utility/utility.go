@@ -172,16 +172,7 @@ func compressDuplicateDestinations(firewallRules FirewallRules) FirewallRules {
 			continue
 		}
 		rulePortInt, _ := strconv.Atoi(fwRule.Port)
-		prevRulePorts := strings.Split(prevRule.Port, "-")
-		prevRuleStartPort := prevRulePorts[0]
-		prevRuleEndPort := ""
-		if len(prevRulePorts) > 1 {
-			prevRuleEndPort = prevRulePorts[1]
-		}
-		prevRulePortInt, _ := strconv.Atoi(prevRuleStartPort)
-		if prevRuleEndPort != "" {
-			prevRulePortInt, _ = strconv.Atoi(prevRuleEndPort)
-		}
+		prevRulePortInt, _ := strconv.Atoi(prevRule.Port)
 		if rulePortInt == prevRulePortInt+1 {
 			if reflect.DeepEqual(fwRule.Destination, prevRule.Destination) {
 				previousPort := strings.Split(firewallRulesResult[len(firewallRulesResult)-1].Port, "-")[0]

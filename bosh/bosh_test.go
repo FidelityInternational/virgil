@@ -253,63 +253,63 @@ var _ = Describe("#GetRuntimeVMs", func() {
 var _ = Describe("#GetAllIPs", func() {
 	It("return IPs for the provided VMs", func() {
 		var deploymentVMs = bosh.DeploymentVMs{
-			&bosh.DeploymentVM{
+			{
 				JobName: "dea-partition-d284104a9345228c01e2",
 				Index:   0,
 				VMCid:   "11",
 				AgentID: "11",
 				IPs:     []string{"11.11.11.11"},
 			},
-			&bosh.DeploymentVM{
+			{
 				JobName: "dea-partition-d284104a9345228c01e2",
 				Index:   1,
 				VMCid:   "2",
 				AgentID: "2",
 				IPs:     []string{"2.2.2.2"},
 			},
-			&bosh.DeploymentVM{
+			{
 				JobName: "dea-partition-d284104a9345228c01e2",
 				Index:   2,
 				VMCid:   "6",
 				AgentID: "6",
 				IPs:     []string{"6.6.6.6"},
 			},
-			&bosh.DeploymentVM{
+			{
 				JobName: "dea-partition-d284104a9345228c01e2",
 				Index:   3,
 				VMCid:   "7",
 				AgentID: "7",
 				IPs:     []string{"7.7.7.7"},
 			},
-			&bosh.DeploymentVM{
+			{
 				JobName: "dea-partition-d284104a9345228c01e2",
 				Index:   4,
 				VMCid:   "8",
 				AgentID: "8",
 				IPs:     []string{"8.8.8.8"},
 			},
-			&bosh.DeploymentVM{
+			{
 				JobName: "dea-partition-d284104a9345228c01e2",
 				Index:   5,
 				VMCid:   "9",
 				AgentID: "9",
 				IPs:     []string{"9.9.9.9"},
 			},
-			&bosh.DeploymentVM{
+			{
 				JobName: "dea-partition-d284104a9345228c01e2",
 				Index:   6,
 				VMCid:   "10",
 				AgentID: "10",
 				IPs:     []string{"10.10.10.10"},
 			},
-			&bosh.DeploymentVM{
+			{
 				JobName: "diego_cell-partition-d284104a9345228c01e2",
 				Index:   0,
 				VMCid:   "4",
 				AgentID: "4",
 				IPs:     []string{"4.4.4.4"},
 			},
-			&bosh.DeploymentVM{
+			{
 				JobName: "diego_cell-partition-d284104a9345228c01e2",
 				Index:   1,
 				VMCid:   "5",

@@ -2,7 +2,7 @@ package utility
 
 import (
 	"fmt"
-	"github.com/FidelityInternational/virgil/Godeps/_workspace/src/github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/go-cfclient"
 	"reflect"
 	"sort"
 	"strconv"

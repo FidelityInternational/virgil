@@ -1,10 +1,10 @@
 package utility_test
 
 import (
-	"github.com/FidelityInternational/virgil/Godeps/_workspace/src/github.com/cloudfoundry-community/go-cfclient"
-	. "github.com/FidelityInternational/virgil/Godeps/_workspace/src/github.com/onsi/ginkgo"
-	. "github.com/FidelityInternational/virgil/Godeps/_workspace/src/github.com/onsi/gomega"
 	"github.com/FidelityInternational/virgil/utility"
+	"github.com/cloudfoundry-community/go-cfclient"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"sort"
 )
 

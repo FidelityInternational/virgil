@@ -2,19 +2,20 @@ package main
 
 import (
 	"fmt"
-	"github.com/FidelityInternational/virgil/Godeps/_workspace/src/github.com/cloudfoundry-community/go-cfclient"
-	"github.com/FidelityInternational/virgil/Godeps/_workspace/src/github.com/codegangsta/cli"
-	"github.com/FidelityInternational/virgil/Godeps/_workspace/src/gopkg.in/yaml.v2"
 	"github.com/FidelityInternational/virgil/bosh"
 	"github.com/FidelityInternational/virgil/utility"
+	"github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry-community/gogobosh"
+	"github.com/codegangsta/cli"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 )
 
 func main() {
 	var (
-		systemDomain, cfUser, cfPassword, boshUser, boshPassword, boshURI, boshPort string
-		skipSSLValidation                                                           = false
+		systemDomain, cfUser, cfPassword, boshUser, boshPassword, boshURI string
+		skipSSLValidation                                                 = false
 	)
 
 	app := cli.NewApp()
@@ -53,12 +54,6 @@ func main() {
 			Usage:       "BOSH URI",
 			Destination: &boshURI,
 		},
-		cli.StringFlag{
-			Name:        "bosh-port, bport",
-			Usage:       "BOSH Port",
-			Value:       "25555",
-			Destination: &boshPort,
-		},
 		cli.BoolFlag{
 			Name:        "skip-ssl-validation, skip-ssl",
 			Usage:       "Skip SSL Validation",
@@ -76,15 +71,18 @@ func main() {
 			Password:          cfPassword,
 			SkipSslValidation: skipSSLValidation,
 		}
-		boshConfig := &bosh.Config{
+		boshConfig := &gogobosh.Config{
 			Username:          boshUser,
 			Password:          boshPassword,
-			BoshURI:           boshURI,
-			Port:              boshPort,
-			SkipSSLValidation: skipSSLValidation,
+			BOSHAddress:       boshURI,
+			SkipSslValidation: skipSSLValidation,
 		}
 		client, err := cfclient.NewClient(config)
-		boshClient := bosh.NewClient(boshConfig)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+		boshClient, err := gogobosh.NewClient(boshConfig)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
@@ -96,19 +94,21 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Println("BOSH\t- Finding CF deployment...")
-		deployment, err := boshClient.SearchDeployment("^cf-.+")
+		deployments, err := boshClient.GetDeployments()
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
+		deployment := bosh.FindDeployment(deployments, "^cf-.+")
 		fmt.Println("BOSH\t- Fetching DEA/Diego Cell VM details...")
-		boshVMs, err := boshClient.GetRuntimeVMs(deployment)
+		boshVMs, err := boshClient.GetDeploymentVMs(deployment)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
 		fmt.Println("BOSH\t- Fetching DEA/Diego Cell VM IPs...")
-		sources := boshVMs.GetAllIPs()
+		runtimeVMs := bosh.FindVMs(boshVMs, "^(dea|diego_cell)-partition.+")
+		sources := bosh.GetAllIPs(runtimeVMs)
 		fmt.Println("Virgil\t- Filtering for 'used' Security Groups...")
 		secGroups := utility.GetUsedSecGroups(allSecGroups)
 		fmt.Println("Virgil\t- Generating Firewall Rules...")

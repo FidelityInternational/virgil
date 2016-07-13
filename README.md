@@ -25,7 +25,7 @@ virgil \
 --cf-password='cf_admin_password' \
 --bosh-user='bosh_username' \
 --bosh-password='bosh_password' \
---bosh-uri='bosh.example.com' \
+--bosh-uri='https://bosh.example.com:25555' \
 output_file_name.yml
 ```
 
@@ -45,9 +45,10 @@ The library option is currently just a stripped back version of the CLI code, th
 
 ```
 import (
-  github.com/cloudfoundry-community/go-cfclient
-  gopkg.in/FidelityInternational/virgil.v1/bosh
-  gopkg.in/FidelityInternational/virgil.v1/utility
+  "github.com/cloudfoundry-community/go-cfclient"
+  "gopkg.in/FidelityInternational/virgil.v2/bosh"
+  "gopkg.in/FidelityInternational/virgil.v2/utility"
+  "github.com/cloudfoundry-community/gogobosh"
 )
 cfConfig := &cfclient.Config{
   ApiAddress:        "https://api.domain.example.com",
@@ -55,19 +56,20 @@ cfConfig := &cfclient.Config{
   Password:          "cf_admin_password",
   SkipSslValidation: false,
 }
-boshConfig := &bosh.Config{
+boshConfig := &gogobosh.Config{
   Username:          "bosh_username",
   Password:          "bosh_password",
-  BoshURI:           "bosh.example.com",
-  Port:              "25555",
-  SkipSSLValidation: false,
+  BOSHAddress:       "bosh.example.com",
+  SkipSslValidation: false,
 }
 cfClient, _ := cfclient.NewClient(cfConfig)
-boshClient := bosh.NewClient(boshConfig)
+boshClient := gogobosh.NewClient(boshConfig)
 allSecGroups, _ := cfClient.ListSecGroups()
-deployment, _ := boshClient.SearchDeployment("^cf-.+")
-boshVMs, _ := boshClient.GetRuntimeVMs(deployment)
-sources := boshVMs.GetAllIPs()
+deployments, _ := boshClient.GetDeployments()
+deployment := bosh.FindDeployment(deployments, "^cf-.+")
+boshVMs, _ := boshClient.GetDeploymentVMs(deployment)
+runtimeVMs := bosh.FindVMs(boshVMs, "^(dea|diego_cell)-partition.+")
+sources := bosh.GetAllIPs(runtimeVMs)
 secGroups := utility.GetUsedSecGroups(allSecGroups)
 firewallRules := utility.GetFirewallRules(sources, secGroups)
 ```

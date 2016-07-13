@@ -60,7 +60,7 @@ func main() {
 			Destination: &skipSSLValidation,
 		},
 	}
-	app.Action = func(c *cli.Context) {
+	app.Action = func(c *cli.Context) error {
 		if systemDomain == "" || cfUser == "" || cfPassword == "" || c.NArg() == 0 || boshUser == "" || boshPassword == "" || boshURI == "" {
 			fmt.Println("cf-system-domain, cf-user, cf-password, bosh-user, bosh-password, bosh-uri and output_file must all be set")
 			os.Exit(1)
@@ -121,6 +121,7 @@ func main() {
 		}
 		ioutil.WriteFile(c.Args()[0], []byte(fmt.Sprintf("---\n%v", string(yml))), os.FileMode(0644))
 		fmt.Println("Firewall Policy written to file: ", c.Args()[0])
+		return nil
 	}
 	app.Run(os.Args)
 }

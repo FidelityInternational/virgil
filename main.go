@@ -10,6 +10,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
+	"sort"
 )
 
 func main() {
@@ -108,7 +109,7 @@ func main() {
 		}
 		fmt.Println("BOSH\t- Fetching DEA/Diego Cell VM IPs...")
 		runtimeVMs := bosh.FindVMs(boshVMs, "^(dea|diego_cell)-partition.+")
-		sources := bosh.GetAllIPs(runtimeVMs)
+		sources := sort.StringSlice(bosh.GetAllIPs(runtimeVMs))
 		fmt.Println("Virgil\t- Filtering for 'used' Security Groups...")
 		secGroups := utility.GetUsedSecGroups(allSecGroups)
 		fmt.Println("Virgil\t- Generating Firewall Rules...")

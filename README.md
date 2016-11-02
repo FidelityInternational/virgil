@@ -73,3 +73,16 @@ sources := bosh.GetAllIPs(runtimeVMs)
 secGroups := utility.GetUsedSecGroups(allSecGroups)
 firewallRules := utility.GetFirewallRules(sources, secGroups)
 ```
+
+### Contributing
+
+The `master` branch of this repository is under control of a [Concourse](https://concourse.ci/) only - No puny humans may ever commit anything into there.
+
+To develop on this repo, you will need to...
+
+- create your own development branch/ fork
+- raise a PR against `staging`
+
+Once you've PR'd and been merged into `staging`, Concourse will make sure everything passes all the tests and merge it to `master` for you.
+
+This concourse pipeline is actively monitored but if you have a PR merged and do not see the changes appear in master within 30 minutes or so please feel free to raise an issue.

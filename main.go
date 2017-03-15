@@ -108,7 +108,7 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Println("BOSH\t- Fetching DEA/Diego Cell VM IPs...")
-		runtimeVMs := bosh.FindVMs(boshVMs, "^(dea|diego_cell)-partition.+")
+		runtimeVMs := bosh.FindVMs(boshVMs, "^(dea|diego_cell).*")
 		sources := bosh.GetAllIPs(runtimeVMs)
 		sort.Strings(sources)
 		fmt.Println("Virgil\t- Filtering for 'used' Security Groups...")

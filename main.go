@@ -100,7 +100,7 @@ func main() {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-		deployment := bosh.FindDeployment(deployments, "^cf-.+")
+		deployment := bosh.FindDeployment(deployments, "^cf.*")
 		fmt.Println("BOSH\t- Fetching DEA/Diego Cell VM details...")
 		boshVMs, err := boshClient.GetDeploymentVMs(deployment)
 		if err != nil {

@@ -3,7 +3,7 @@ language: go
 
 go:
   - tip
-  - 1.6
+  - 1.15
 
 go_import_path: github.com/FidelityInternational/virgil
 

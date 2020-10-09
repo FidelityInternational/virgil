@@ -6,7 +6,7 @@ import (
 	"github.com/FidelityInternational/virgil/utility"
 	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/gogobosh"
-	"github.com/codegangsta/cli"
+	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"

@@ -7,11 +7,11 @@ type Info struct {
 	Version           string            `json:"version"`
 	User              string            `json:"user"`
 	CPI               string            `json:"cpi"`
-	UserAuthenication UserAuthenication `json:"user_authentication"`
+	UserAuthentication UserAuthentication `json:"user_authentication"`
 }
 
-// UserAuthenication struct
-type UserAuthenication struct {
+// UserAuthentication struct
+type UserAuthentication struct {
 	Type    string `json:"type"`
 	Options struct {
 		URL string `json:"url"`
@@ -65,14 +65,83 @@ type Manifest struct {
 
 // VM struct
 type VM struct {
-	AgentID           string   `json:"agent_id"`
-	VMCID             string   `json:"vm_cid"`
-	CID               string   `json:"cid"`
-	JobName           string   `json:"job_name"`
-	Index             int      `json:"index"`
-	IPs               []string `json:"ips"`
-	DNS               []string `json:"dns"`
-	ResurectionPaused bool     `json:"resurrection_paused"`
+	VMCID             string    `json:"vm_cid"`
+	IPs               []string  `json:"ips"`
+	DNS               []string  `json:"dns"`
+	AgentID           string    `json:"agent_id"`
+	JobName           string    `json:"job_name"`
+	Index             int       `json:"index"`
+	JobState          string    `json:"job_state"`
+	State             string    `json:"state"`
+	ResourcePool      string    `json:"resource_pool"`
+	VMType            string    `json:"vm_type"`
+	Vitals            Vitals    `json:"vitals"`
+	Processes         []Process `json:"processes"`
+	ResurectionPaused bool      `json:"resurrection_paused"`
+	AZ                string    `json:"az"`
+	ID                string    `json:"id"`
+	Bootstrap         bool      `json:"bootstrap"`
+	Ignore            bool      `json:"ignore"`
+}
+
+// VM Vitals struct
+type Vitals struct {
+	Disk Disk     `json:"disk"`
+	Load []string `json:"load"`
+	Mem  Memory   `json:"mem"`
+	Swap Memory   `json:"swap"`
+	CPU  CPU      `json:"cpu"`
+}
+
+// Disk struct
+type Disk struct {
+	Ephemeral  DiskStats `json:"ephemeral"`
+	System     DiskStats `json:"system"`
+	Persistent DiskStats `json:"persistent"`
+}
+
+// CPU struct
+type CPU struct {
+	Sys  string `json:"sys"`
+	User string `json:"user"`
+	Wait string `json:"wait"`
+}
+
+// DiskStats struct
+type DiskStats struct {
+	Percent      string `json:"percent"`
+	InodePercent string `json:"inode_percent"`
+}
+
+// Memory struct
+type Memory struct {
+	Percent string `json:"percent"`
+	KB      string `json:"KB"`
+}
+
+// VM Process struct
+type Process struct {
+	Name   string        `json:"name"`
+	State  string        `json:"state"`
+	Uptime Uptime        `json:"uptime"`
+	Mem    ProcessMemory `json:"mem"`
+	CPU    ProcessCPU    `json:"cpu"`
+}
+
+// Uptime struct
+type Uptime struct {
+	Secs int `json:"secs"`
+}
+
+// ProcessCPU struct
+type ProcessCPU struct {
+	Total float64 `json:"total"`
+}
+
+// ProcessMemory struct
+type ProcessMemory struct {
+	Percent float64 `json:"percent"`
+	KB      int     `json:"KB"`
 }
 
 // Task struct
@@ -83,4 +152,45 @@ type Task struct {
 	Timestamp   int    `json:"timestamp"`
 	Result      string `json:"result"`
 	User        string `json:"user"`
+}
+
+// Event struct
+type Event struct {
+	ID         string                 `json:"id"`
+	ParentID   string                 `json:"parent_id"`
+	Timestamp  int                    `json:"timestamp"`
+	User       string                 `json:"user"`
+	Action     string                 `json:"action"`
+	ObjectType string                 `json:"object_type"`
+	ObjectName string                 `json:"object_name"`
+	Task       string                 `json:"task"`
+	Deployment string                 `json:"deployment"`
+	Error      string                 `json:"error"`
+	Context    map[string]interface{} `json:"context"`
+}
+
+// TaskEvent struct
+type TaskEvent struct {
+	Time     int      `json:"time"`
+	Stage    string   `json:"stage"`
+	Tags     []string `json:"tags"`
+	Total    int      `json:"total"`
+	Task     string   `json:"task"`
+	Index    int      `json:"index"`
+	State    string   `json:"state"`
+	Progress int      `json:"progress"`
+
+	Error struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	} `json:"error"`
+}
+
+// Cfg struct
+type Cfg struct {
+	Name      string `json:"name"`
+	Type      string `json:"name"`
+	Content   string `json:"content"`
+	CreatedAt int    `json:"int"`
+	Deleted   bool   `json:"deleted"`
 }

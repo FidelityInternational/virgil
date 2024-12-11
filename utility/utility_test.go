@@ -2,7 +2,8 @@ package utility_test
 
 import (
 	"github.com/FidelityInternational/virgil/utility"
-	"github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry/go-cfclient/v3/client"
+	"github.com/cloudfoundry/go-cfclient/v3/resource"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"sort"
@@ -106,13 +107,13 @@ var _ = Describe("#ProcessRule", func() {
 	var source = []string{"1.2.3.4", "2.3.4.5"}
 	Context("when ports can be expanded", func() {
 		It("returns valid firewall rules", func() {
-			var securityGroupRule1 = cfclient.SecGroupRule{
-				Ports:       "12,15-20",
+			var securityGroupRule1 = resource.SecurityGroupRule{
+				Ports:       utility.StringPtr("12,15-20"),
 				Protocol:    "tcp",
 				Destination: "1.1.1.1",
 			}
-			var securityGroupRule2 = cfclient.SecGroupRule{
-				Ports:       "12,18-21",
+			var securityGroupRule2 = resource.SecurityGroupRule{
+				Ports:       utility.StringPtr("12,18-21"),
 				Protocol:    "tcp",
 				Destination: "2.2.2.2",
 			}
@@ -144,8 +145,8 @@ var _ = Describe("#ProcessRule", func() {
 
 	Context("when ports cannot be expanded", func() {
 		It("returns an error", func() {
-			var securityGroupRule1 = cfclient.SecGroupRule{
-				Ports:       "12,21-20",
+			var securityGroupRule1 = resource.SecurityGroupRule{
+				Ports:       utility.StringPtr("12,21-20"),
 				Protocol:    "tcp",
 				Destination: "1.1.1.1",
 			}
@@ -158,79 +159,82 @@ var _ = Describe("#ProcessRule", func() {
 
 var _ = Describe("#GetUsedSecGroups", func() {
 	It("returns an array of in use security groups", func() {
-		var securityGroups = []cfclient.SecGroup{
+		var securityGroups = []resource.SecurityGroup{
 			{
-				Guid:       "1",
-				Name:       "test-sec-group1",
-				Running:    false,
-				Staging:    false,
-				SpacesData: []cfclient.SpaceResource{},
+				Name: "test-sec-group1",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(false),
+					Staging: utility.BoolPtr(false),
+				},
+				Relationships: resource.SecurityGroupsRelationships{},
 			},
 			{
-				Guid:       "2",
-				Name:       "test-sec-group2",
-				Running:    true,
-				Staging:    false,
-				SpacesData: []cfclient.SpaceResource{},
+				Name: "test-sec-group2",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(true),
+					Staging: utility.BoolPtr(false),
+				},
+				Relationships: resource.SecurityGroupsRelationships{},
 			},
 			{
-				Guid:       "3",
-				Name:       "test-sec-group3",
-				Running:    false,
-				Staging:    true,
-				SpacesData: []cfclient.SpaceResource{},
+				Name: "test-sec-group3",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(false),
+					Staging: utility.BoolPtr(true),
+				},
+				Relationships: resource.SecurityGroupsRelationships{},
 			},
 			{
-				Guid:       "4",
-				Name:       "test-sec-group4",
-				Running:    true,
-				Staging:    true,
-				SpacesData: []cfclient.SpaceResource{},
+				Name: "test-sec-group4",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(true),
+					Staging: utility.BoolPtr(true),
+				},
+				Relationships: resource.SecurityGroupsRelationships{},
 			},
 			{
-				Guid:    "5",
-				Name:    "test-sec-group5",
-				Running: false,
-				Staging: false,
-				SpacesData: []cfclient.SpaceResource{
+				Name: "test-sec-group5",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(false),
+					Staging: utility.BoolPtr(false),
+				},
+				Relationships: resource.SecurityGroupsRelationships{
 					{
-						Meta:   cfclient.Meta{Guid: "1"},
-						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+						Guid: resource.Space{Name: "test-space1"},
 					},
 				},
 			},
 		}
 		usedSecGroups := utility.GetUsedSecGroups(securityGroups)
 		Expect(usedSecGroups).To(HaveLen(4))
-		Expect(usedSecGroups).ToNot(ContainElement(cfclient.SecGroup{
-			Guid:       "1",
+		Expect(usedSecGroups).ToNot(ContainElement(resource.SecurityGroup{
 			Name:       "test-sec-group1",
 			Running:    false,
 			Staging:    false,
 			SpacesData: []cfclient.SpaceResource{},
 		}))
-		Expect(usedSecGroups).To(ContainElement(cfclient.SecGroup{
+		Expect(usedSecGroups).To(ContainElement(resource.SecurityGroup{
 			Guid:       "2",
 			Name:       "test-sec-group2",
 			Running:    true,
 			Staging:    false,
 			SpacesData: []cfclient.SpaceResource{},
 		}))
-		Expect(usedSecGroups).To(ContainElement(cfclient.SecGroup{
+		Expect(usedSecGroups).To(ContainElement(resource.SecurityGroup{
 			Guid:       "3",
 			Name:       "test-sec-group3",
 			Running:    false,
 			Staging:    true,
 			SpacesData: []cfclient.SpaceResource{},
 		}))
-		Expect(usedSecGroups).To(ContainElement(cfclient.SecGroup{
+		Expect(usedSecGroups).To(ContainElement(resource.SecurityGroup{
 			Guid:       "4",
 			Name:       "test-sec-group4",
 			Running:    true,
 			Staging:    true,
 			SpacesData: []cfclient.SpaceResource{},
 		}))
-		Expect(usedSecGroups).To(ContainElement(cfclient.SecGroup{
+		Expect(usedSecGroups).To(ContainElement(resource.SecurityGroup{
 			Guid:    "5",
 			Name:    "test-sec-group5",
 			Running: false,

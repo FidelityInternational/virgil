@@ -2,12 +2,22 @@ package utility
 
 import (
 	"fmt"
-	"github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry/go-cfclient/v3/resource"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 )
+
+// String pointer maker - converts a string to a pointer
+func StringPtr(originalString string) *string {
+	return &originalString
+}
+
+// Boolean pointer maker - converts a boolean to a pointer
+func BoolPtr(b bool) *bool {
+	return &b
+}
 
 // FirewallRules - A collection of Firewall Rules with version
 type FirewallRules struct {
@@ -75,7 +85,7 @@ func PortExpand(portString string) ([]string, error) {
 }
 
 // ProcessRule - returns a concise list of firewall rules for one security group rule
-func ProcessRule(secGroupRule cfclient.SecGroupRule, firewallRules []FirewallRule, source []string) ([]FirewallRule, error) {
+func ProcessRule(secGroupRule resource.SecurityGroupRule, firewallRules []FirewallRule, source []string) ([]FirewallRule, error) {
 	if strings.EqualFold(secGroupRule.Protocol, "all") {
 		newRules := FirewallRule{
 			Protocol:    secGroupRule.Protocol,
@@ -85,7 +95,7 @@ func ProcessRule(secGroupRule cfclient.SecGroupRule, firewallRules []FirewallRul
 		firewallRules = append(firewallRules, newRules)
 		return firewallRules, nil
 	}
-	ports, err := PortExpand(secGroupRule.Ports)
+	ports, err := PortExpand(*secGroupRule.Ports)
 	if err != nil {
 		return []FirewallRule{}, err
 	}
@@ -127,10 +137,10 @@ func RemoveDuplicates(xs *[]string) {
 }
 
 // GetUsedSecGroups - Trims out any security-groups that cannot be used. I.E not running, staging or bound
-func GetUsedSecGroups(allSecGroups []cfclient.SecGroup) []cfclient.SecGroup {
-	var secGroups []cfclient.SecGroup
+func GetUsedSecGroups(allSecGroups []resource.SecurityGroup) []resource.SecurityGroup {
+	var secGroups []resource.SecurityGroup
 	for _, secGroup := range allSecGroups {
-		if secGroup.Running || secGroup.Staging || len(secGroup.SpacesData) != 0 {
+		if *secGroup.GloballyEnabled.Running || *secGroup.GloballyEnabled.Staging || len(secGroup.Relationships.RunningSpaces.Data) != 0 || len(secGroup.Relationships.StagingSpaces.Data) != 0 {
 			secGroups = append(secGroups, secGroup)
 		}
 	}
@@ -138,7 +148,7 @@ func GetUsedSecGroups(allSecGroups []cfclient.SecGroup) []cfclient.SecGroup {
 }
 
 // GetFirewallRules - Returns a concise list of firewall rules for all security groups
-func GetFirewallRules(source []string, secGroups []cfclient.SecGroup) FirewallRules {
+func GetFirewallRules(source []string, secGroups []resource.SecurityGroup) FirewallRules {
 	var (
 		firewallRules, fwRules FirewallRules
 		err                    error

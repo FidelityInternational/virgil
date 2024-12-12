@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/FidelityInternational/virgil/bosh"
 	"github.com/FidelityInternational/virgil/utility"
@@ -90,7 +91,8 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Println("CF\t- Fetching Security Groups...")
-		allSecGroups, err := client.SecurityGroups.ListAll(nil, nil)
+		ctx := context.Background()
+		allSecGroups, err := client.SecurityGroups.ListAll(ctx, nil)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)

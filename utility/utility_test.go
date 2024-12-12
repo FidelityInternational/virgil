@@ -2,7 +2,6 @@ package utility_test
 
 import (
 	"github.com/FidelityInternational/virgil/utility"
-	"github.com/cloudfoundry/go-cfclient/v3/client"
 	"github.com/cloudfoundry/go-cfclient/v3/resource"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,11 +16,11 @@ var _ = Describe("#PortExpand", func() {
 			const portString3 = "1, 2, 3"
 			const portString4 = "3-4"
 			const portString5 = "3 - 4"
-			Expect(utility.PortExpand(portString1)).To(Equal([]string{"3", "5", "6", "7"}))
-			Expect(utility.PortExpand(portString2)).To(Equal([]string{"1", "2", "3"}))
-			Expect(utility.PortExpand(portString3)).To(Equal([]string{"1", "2", "3"}))
-			Expect(utility.PortExpand(portString4)).To(Equal([]string{"3", "4"}))
-			Expect(utility.PortExpand(portString5)).To(Equal([]string{"3", "4"}))
+			Expect(utility.PortExpand(portString1)).To(Equal(&[]string{"3", "5", "6", "7"}))
+			Expect(utility.PortExpand(portString2)).To(Equal(&[]string{"1", "2", "3"}))
+			Expect(utility.PortExpand(portString3)).To(Equal(&[]string{"1", "2", "3"}))
+			Expect(utility.PortExpand(portString4)).To(Equal(&[]string{"3", "4"}))
+			Expect(utility.PortExpand(portString5)).To(Equal(&[]string{"3", "4"}))
 		})
 	})
 
@@ -35,22 +34,22 @@ var _ = Describe("#PortExpand", func() {
 				const portString5 = "4-"
 				const portString6 = "-"
 				ports, err := utility.PortExpand(portString1)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port range 6-6 was invalid"))
 				ports, err = utility.PortExpand(portString2)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port range 9-6 was invalid"))
 				ports, err = utility.PortExpand(portString3)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port range 3-6-8 was invalid"))
 				ports, err = utility.PortExpand(portString4)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port  was invalid as part of range -4"))
 				ports, err = utility.PortExpand(portString5)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port  was invalid as part of range 4-"))
 				ports, err = utility.PortExpand(portString6)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port  was invalid as part of range -"))
 			})
 		})
@@ -61,13 +60,13 @@ var _ = Describe("#PortExpand", func() {
 				const portString2 = "#-7"
 				const portString3 = "7-d"
 				ports, err := utility.PortExpand(portString1)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port * was invalid"))
 				ports, err = utility.PortExpand(portString2)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port # was invalid as part of range #-7"))
 				ports, err = utility.PortExpand(portString3)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port d was invalid as part of range 7-d"))
 			})
 		})
@@ -81,22 +80,22 @@ var _ = Describe("#PortExpand", func() {
 				const portString5 = "3,4-8,1256789-98"
 				const portString6 = "65536"
 				ports, err := utility.PortExpand(portString1)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port 0 was invalid"))
 				ports, err = utility.PortExpand(portString2)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port 3456789 was invalid"))
 				ports, err = utility.PortExpand(portString3)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port 678800 was invalid"))
 				ports, err = utility.PortExpand(portString4)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port 99999999 was invalid as part of range 12-99999999"))
 				ports, err = utility.PortExpand(portString5)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port 1256789 was invalid as part of range 1256789-98"))
 				ports, err = utility.PortExpand(portString6)
-				Expect(ports).To(HaveLen(0))
+				Expect(ports).To(BeNil())
 				Expect(err).To(MatchError("Port 65536 was invalid"))
 			})
 		})
@@ -199,8 +198,10 @@ var _ = Describe("#GetUsedSecGroups", func() {
 					Staging: utility.BoolPtr(false),
 				},
 				Relationships: resource.SecurityGroupsRelationships{
-					{
-						Guid: resource.Space{Name: "test-space1"},
+					RunningSpaces: resource.ToManyRelationships{
+						Data: []resource.Relationship{
+							{GUID: "test-space1"},
+						},
 					},
 				},
 			},
@@ -208,41 +209,48 @@ var _ = Describe("#GetUsedSecGroups", func() {
 		usedSecGroups := utility.GetUsedSecGroups(securityGroups)
 		Expect(usedSecGroups).To(HaveLen(4))
 		Expect(usedSecGroups).ToNot(ContainElement(resource.SecurityGroup{
-			Name:       "test-sec-group1",
-			Running:    false,
-			Staging:    false,
-			SpacesData: []cfclient.SpaceResource{},
+			Name: "test-sec-group1",
+			GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+				Running: utility.BoolPtr(false),
+				Staging: utility.BoolPtr(false),
+			},
+			Relationships: resource.SecurityGroupsRelationships{},
 		}))
 		Expect(usedSecGroups).To(ContainElement(resource.SecurityGroup{
-			Guid:       "2",
-			Name:       "test-sec-group2",
-			Running:    true,
-			Staging:    false,
-			SpacesData: []cfclient.SpaceResource{},
+			Name: "test-sec-group2",
+			GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+				Running: utility.BoolPtr(true),
+				Staging: utility.BoolPtr(false),
+			},
+			Relationships: resource.SecurityGroupsRelationships{},
 		}))
 		Expect(usedSecGroups).To(ContainElement(resource.SecurityGroup{
-			Guid:       "3",
-			Name:       "test-sec-group3",
-			Running:    false,
-			Staging:    true,
-			SpacesData: []cfclient.SpaceResource{},
+			Name: "test-sec-group3",
+			GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+				Running: utility.BoolPtr(false),
+				Staging: utility.BoolPtr(true),
+			},
+			Relationships: resource.SecurityGroupsRelationships{},
 		}))
 		Expect(usedSecGroups).To(ContainElement(resource.SecurityGroup{
-			Guid:       "4",
-			Name:       "test-sec-group4",
-			Running:    true,
-			Staging:    true,
-			SpacesData: []cfclient.SpaceResource{},
+			Name: "test-sec-group4",
+			GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+				Running: utility.BoolPtr(true),
+				Staging: utility.BoolPtr(true),
+			},
+			Relationships: resource.SecurityGroupsRelationships{},
 		}))
 		Expect(usedSecGroups).To(ContainElement(resource.SecurityGroup{
-			Guid:    "5",
-			Name:    "test-sec-group5",
-			Running: false,
-			Staging: false,
-			SpacesData: []cfclient.SpaceResource{
-				{
-					Meta:   cfclient.Meta{Guid: "1"},
-					Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+			Name: "test-sec-group5",
+			GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+				Running: utility.BoolPtr(false),
+				Staging: utility.BoolPtr(false),
+			},
+			Relationships: resource.SecurityGroupsRelationships{
+				RunningSpaces: resource.ToManyRelationships{
+					Data: []resource.Relationship{
+						{GUID: "test-space1"},
+					},
 				},
 			},
 		}))
@@ -253,178 +261,194 @@ var _ = Describe("#GetFirewallRules", func() {
 	var source = []string{"1.2.3.4", "2.3.4.5"}
 
 	It("Returns an array of Firewall Rules", func() {
-		var securityGroups = []cfclient.SecGroup{
+		var securityGroups = []resource.SecurityGroup{
 			{
-				Guid:    "2",
-				Name:    "test-sec-group2",
-				Running: true,
-				Staging: false,
-				Rules: []cfclient.SecGroupRule{
+				Name: "test-sec-group2",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(true),
+					Staging: utility.BoolPtr(false),
+				},
+				Rules: []resource.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
-						Ports:       "1,2-4",
+						Ports:       utility.StringPtr("1,2-4"),
 						Destination: "2.2.2.2",
 					},
 					{
 						Protocol:    "tcp",
-						Ports:       "8",
+						Ports:       utility.StringPtr("8"),
 						Destination: "5.5.5.5",
 					},
 				},
-				SpacesData: []cfclient.SpaceResource{},
+				Relationships: resource.SecurityGroupsRelationships{},
 			},
 			{
-				Guid:    "3",
-				Name:    "test-sec-group3",
-				Running: false,
-				Staging: true,
-				Rules: []cfclient.SecGroupRule{
+				Name: "test-sec-group3",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(false),
+					Staging: utility.BoolPtr(true),
+				},
+				Rules: []resource.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
-						Ports:       "2,3-4",
+						Ports:       utility.StringPtr("2,3-4"),
 						Destination: "3.3.3.3",
 					},
 				},
-				SpacesData: []cfclient.SpaceResource{},
+				Relationships: resource.SecurityGroupsRelationships{},
 			},
 			{
-				Guid:    "6",
-				Name:    "test-sec-group6",
-				Running: false,
-				Staging: true,
-				Rules: []cfclient.SecGroupRule{
+				Name: "test-sec-group6",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(false),
+					Staging: utility.BoolPtr(true),
+				},
+				Rules: []resource.SecurityGroupRule{
 					{
 						Protocol:    "all",
 						Destination: "9.9.9.9",
 					},
 				},
-				SpacesData: []cfclient.SpaceResource{},
+				Relationships: resource.SecurityGroupsRelationships{},
 			},
 			{
-				Guid:    "4",
-				Name:    "test-sec-group4",
-				Running: true,
-				Staging: true,
-				Rules: []cfclient.SecGroupRule{
+				Name: "test-sec-group4",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(true),
+					Staging: utility.BoolPtr(true),
+				},
+				Rules: []resource.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
-						Ports:       "1,4-7",
+						Ports:       utility.StringPtr("1,4-7"),
 						Destination: "4.4.4.4",
 					},
 				},
-				SpacesData: []cfclient.SpaceResource{},
+				Relationships: resource.SecurityGroupsRelationships{},
 			},
 			{
-				Guid:    "5",
-				Name:    "test-sec-group5",
-				Running: false,
-				Staging: false,
-				Rules: []cfclient.SecGroupRule{
+				Name: "test-sec-group5",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(false),
+					Staging: utility.BoolPtr(false),
+				},
+				Rules: []resource.SecurityGroupRule{
 					{
 						Protocol:    "udp",
-						Ports:       "2",
+						Ports:       utility.StringPtr("2"),
 						Destination: "1.1.1.1",
 					},
 				},
-				SpacesData: []cfclient.SpaceResource{
-					{
-						Meta:   cfclient.Meta{Guid: "1"},
-						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+				Relationships: resource.SecurityGroupsRelationships{
+					RunningSpaces: resource.ToManyRelationships{
+						Data: []resource.Relationship{
+							{GUID: "test-space1"},
+						},
 					},
 				},
 			},
 			{
-				Guid:    "7",
-				Name:    "test-sec-group7",
-				Running: false,
-				Staging: false,
-				Rules: []cfclient.SecGroupRule{
+				Name: "test-sec-group7",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(false),
+					Staging: utility.BoolPtr(false),
+				},
+				Rules: []resource.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
-						Ports:       "99",
+						Ports:       utility.StringPtr("99"),
 						Destination: "9.9.9.9",
 					},
 				},
-				SpacesData: []cfclient.SpaceResource{
-					{
-						Meta:   cfclient.Meta{Guid: "1"},
-						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+				Relationships: resource.SecurityGroupsRelationships{
+					RunningSpaces: resource.ToManyRelationships{
+						Data: []resource.Relationship{
+							{GUID: "test-space1"},
+						},
 					},
 				},
 			},
 			{
-				Guid:    "8",
-				Name:    "test-sec-group8",
-				Running: false,
-				Staging: false,
-				Rules: []cfclient.SecGroupRule{
+				Name: "test-sec-group8",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(false),
+					Staging: utility.BoolPtr(false),
+				},
+				Rules: []resource.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
-						Ports:       "100",
+						Ports:       utility.StringPtr("100"),
 						Destination: "9.9.9.9",
 					},
 				},
-				SpacesData: []cfclient.SpaceResource{
-					{
-						Meta:   cfclient.Meta{Guid: "1"},
-						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+				Relationships: resource.SecurityGroupsRelationships{
+					RunningSpaces: resource.ToManyRelationships{
+						Data: []resource.Relationship{
+							{GUID: "test-space1"},
+						},
 					},
 				},
 			},
 			{
-				Guid:    "9",
-				Name:    "test-sec-group9",
-				Running: false,
-				Staging: false,
-				Rules: []cfclient.SecGroupRule{
+				Name: "test-sec-group9",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(false),
+					Staging: utility.BoolPtr(false),
+				},
+				Rules: []resource.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
-						Ports:       "110-120",
+						Ports:       utility.StringPtr("110-120"),
 						Destination: "9.9.9.9",
 					},
 				},
-				SpacesData: []cfclient.SpaceResource{
-					{
-						Meta:   cfclient.Meta{Guid: "1"},
-						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+				Relationships: resource.SecurityGroupsRelationships{
+					RunningSpaces: resource.ToManyRelationships{
+						Data: []resource.Relationship{
+							{GUID: "test-space1"},
+						},
 					},
 				},
 			},
 			{
-				Guid:    "10",
-				Name:    "test-sec-group10",
-				Running: false,
-				Staging: false,
-				Rules: []cfclient.SecGroupRule{
+				Name: "test-sec-group10",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(false),
+					Staging: utility.BoolPtr(false),
+				},
+				Rules: []resource.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
-						Ports:       "116",
+						Ports:       utility.StringPtr("116"),
 						Destination: "11.1.1.1",
 					},
 				},
-				SpacesData: []cfclient.SpaceResource{
-					{
-						Meta:   cfclient.Meta{Guid: "1"},
-						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+				Relationships: resource.SecurityGroupsRelationships{
+					RunningSpaces: resource.ToManyRelationships{
+						Data: []resource.Relationship{
+							{GUID: "test-space1"},
+						},
 					},
 				},
 			},
 			{
-				Guid:    "11",
-				Name:    "test-sec-group11",
-				Running: false,
-				Staging: false,
-				Rules: []cfclient.SecGroupRule{
+				Name: "test-sec-group11",
+				GloballyEnabled: resource.SecurityGroupGloballyEnabled{
+					Running: utility.BoolPtr(false),
+					Staging: utility.BoolPtr(false),
+				},
+				Rules: []resource.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
-						Ports:       "not_valid_ports",
+						Ports:       utility.StringPtr("not_valid_ports"),
 						Destination: "99.99.99.99",
 					},
 				},
-				SpacesData: []cfclient.SpaceResource{
-					{
-						Meta:   cfclient.Meta{Guid: "1"},
-						Entity: cfclient.Space{Guid: "1", Name: "test-space1"},
+				Relationships: resource.SecurityGroupsRelationships{
+					RunningSpaces: resource.ToManyRelationships{
+						Data: []resource.Relationship{
+							{GUID: "test-space1"},
+						},
 					},
 				},
 			},

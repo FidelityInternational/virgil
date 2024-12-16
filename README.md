@@ -15,7 +15,7 @@ The Cloud Foundry security groups are used for Destination, Port and Protocol an
 
 #### As a CLI
 
-`virgil` can be used as a CLI to produce YAML files of the generated polcies.
+`virgil` can be used as a CLI to produce YAML files of the generated policies.
 
 ```
 go get github.com/FidelityInternational/virgil

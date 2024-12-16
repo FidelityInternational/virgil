@@ -2,12 +2,22 @@ package utility
 
 import (
 	"fmt"
-	"github.com/cloudfoundry-community/go-cfclient"
+	"github.com/cloudfoundry/go-cfclient/v3/resource"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 )
+
+// String pointer maker - converts a string to a pointer
+func StringPtr(originalString string) *string {
+	return &originalString
+}
+
+// Boolean pointer maker - converts a boolean to a pointer
+func BoolPtr(b bool) *bool {
+	return &b
+}
 
 // FirewallRules - A collection of Firewall Rules with version
 type FirewallRules struct {
@@ -39,8 +49,8 @@ func (p ByPort) Less(i, j int) bool {
 	return portIInt < portJInt
 }
 
-// PortExpand - serperates port string into array, for example 2,5-7 becomes {2 5 6 7}
-func PortExpand(portString string) ([]string, error) {
+// PortExpand - separates port string into array, for example 2,5-7 becomes {2 5 6 7}
+func PortExpand(portString string) (*[]string, error) {
 	var ports []string
 	portsBefore := strings.Split(portString, ",")
 	for _, port := range portsBefore {
@@ -50,15 +60,15 @@ func PortExpand(portString string) ([]string, error) {
 			startString := strings.TrimSpace(startFinish[0])
 			start, err := strconv.Atoi(startString)
 			if err != nil || start <= 0 || start >= 65536 {
-				return []string{}, fmt.Errorf("Port %s was invalid as part of range %s", startString, port)
+				return nil, fmt.Errorf("Port %s was invalid as part of range %s", startString, port)
 			}
 			endString := strings.TrimSpace(startFinish[1])
 			end, err := strconv.Atoi(endString)
 			if err != nil || end <= 0 || end >= 65536 {
-				return []string{}, fmt.Errorf("Port %s was invalid as part of range %s", endString, port)
+				return nil, fmt.Errorf("Port %s was invalid as part of range %s", endString, port)
 			}
 			if len(startFinish) != 2 || start >= end {
-				return []string{}, fmt.Errorf("Port range %s was invalid", port)
+				return nil, fmt.Errorf("Port range %s was invalid", port)
 			}
 			for i := start; i <= end; i++ {
 				ports = append(ports, strconv.Itoa(i))
@@ -66,16 +76,16 @@ func PortExpand(portString string) ([]string, error) {
 		} else {
 			portInt, err := strconv.Atoi(port)
 			if err != nil || portInt <= 0 || portInt >= 65536 {
-				return []string{}, fmt.Errorf("Port %s was invalid", port)
+				return nil, fmt.Errorf("Port %s was invalid", port)
 			}
 			ports = append(ports, port)
 		}
 	}
-	return ports, nil
+	return &ports, nil
 }
 
 // ProcessRule - returns a concise list of firewall rules for one security group rule
-func ProcessRule(secGroupRule cfclient.SecGroupRule, firewallRules []FirewallRule, source []string) ([]FirewallRule, error) {
+func ProcessRule(secGroupRule resource.SecurityGroupRule, firewallRules []FirewallRule, source []string) ([]FirewallRule, error) {
 	if strings.EqualFold(secGroupRule.Protocol, "all") {
 		newRules := FirewallRule{
 			Protocol:    secGroupRule.Protocol,
@@ -85,28 +95,31 @@ func ProcessRule(secGroupRule cfclient.SecGroupRule, firewallRules []FirewallRul
 		firewallRules = append(firewallRules, newRules)
 		return firewallRules, nil
 	}
-	ports, err := PortExpand(secGroupRule.Ports)
-	if err != nil {
-		return []FirewallRule{}, err
-	}
-	for _, port := range ports {
-		var newRule = true
-		for i, rule := range firewallRules {
-			if rule.Port == port && rule.Protocol == secGroupRule.Protocol {
-				rule.Destination = append(rule.Destination, secGroupRule.Destination)
-				RemoveDuplicates(&rule.Destination)
-				firewallRules[i] = rule
-				newRule = false
-			}
+	if secGroupRule.Ports != nil {
+		ports, err := PortExpand(*secGroupRule.Ports)
+		if err != nil {
+			return []FirewallRule{}, err
 		}
-		if newRule {
-			newRules := FirewallRule{
-				Port:        port,
-				Protocol:    secGroupRule.Protocol,
-				Destination: []string{secGroupRule.Destination},
-				Source:      source,
+		for _, portRune := range *ports {
+			port := string(portRune)
+			var newRule = true
+			for i, rule := range firewallRules {
+				if rule.Port == port && rule.Protocol == secGroupRule.Protocol {
+					rule.Destination = append(rule.Destination, secGroupRule.Destination)
+					RemoveDuplicates(&rule.Destination)
+					firewallRules[i] = rule
+					newRule = false
+				}
 			}
-			firewallRules = append(firewallRules, newRules)
+			if newRule {
+				newRules := FirewallRule{
+					Port:        port,
+					Protocol:    secGroupRule.Protocol,
+					Destination: []string{secGroupRule.Destination},
+					Source:      source,
+				}
+				firewallRules = append(firewallRules, newRules)
+			}
 		}
 	}
 	return firewallRules, nil
@@ -127,10 +140,10 @@ func RemoveDuplicates(xs *[]string) {
 }
 
 // GetUsedSecGroups - Trims out any security-groups that cannot be used. I.E not running, staging or bound
-func GetUsedSecGroups(allSecGroups []cfclient.SecGroup) []cfclient.SecGroup {
-	var secGroups []cfclient.SecGroup
+func GetUsedSecGroups(allSecGroups []resource.SecurityGroup) []resource.SecurityGroup {
+	var secGroups []resource.SecurityGroup
 	for _, secGroup := range allSecGroups {
-		if secGroup.Running || secGroup.Staging || len(secGroup.SpacesData) != 0 {
+		if *secGroup.GloballyEnabled.Running || *secGroup.GloballyEnabled.Staging || len(secGroup.Relationships.RunningSpaces.Data) != 0 || len(secGroup.Relationships.StagingSpaces.Data) != 0 {
 			secGroups = append(secGroups, secGroup)
 		}
 	}
@@ -138,7 +151,7 @@ func GetUsedSecGroups(allSecGroups []cfclient.SecGroup) []cfclient.SecGroup {
 }
 
 // GetFirewallRules - Returns a concise list of firewall rules for all security groups
-func GetFirewallRules(source []string, secGroups []cfclient.SecGroup) FirewallRules {
+func GetFirewallRules(source []string, secGroups []resource.SecurityGroup) FirewallRules {
 	var (
 		firewallRules, fwRules FirewallRules
 		err                    error

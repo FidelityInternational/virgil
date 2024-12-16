@@ -1,14 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/FidelityInternational/virgil/bosh"
 	"github.com/FidelityInternational/virgil/utility"
-	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/cloudfoundry-community/gogobosh"
+	"github.com/cloudfoundry/go-cfclient/v3/client"
+	"github.com/cloudfoundry/go-cfclient/v3/config"
+	"github.com/cloudfoundry/go-cfclient/v3/resource"
 	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"os"
 	"sort"
 )
@@ -66,19 +68,19 @@ func main() {
 			fmt.Println("cf-system-domain, cf-user, cf-password, bosh-user, bosh-password, bosh-uri and output_file must all be set")
 			os.Exit(1)
 		}
-		config := &cfclient.Config{
-			ApiAddress:        fmt.Sprintf("https://api.%s", systemDomain),
-			Username:          cfUser,
-			Password:          cfPassword,
-			SkipSslValidation: skipSSLValidation,
+		config, err := config.New(fmt.Sprintf("https://api.%s", systemDomain), config.UserPassword(cfUser, cfPassword))
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
 		}
+
 		boshConfig := &gogobosh.Config{
 			Username:          boshUser,
 			Password:          boshPassword,
 			BOSHAddress:       boshURI,
 			SkipSslValidation: skipSSLValidation,
 		}
-		client, err := cfclient.NewClient(config)
+		client, err := client.New(config)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
@@ -89,7 +91,8 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Println("CF\t- Fetching Security Groups...")
-		allSecGroups, err := client.ListSecGroups()
+		ctx := context.Background()
+		allSecGroups, err := client.SecurityGroups.ListAll(ctx, nil)
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(1)
@@ -112,7 +115,11 @@ func main() {
 		sources := bosh.GetAllIPs(runtimeVMs)
 		sort.Strings(sources)
 		fmt.Println("Virgil\t- Filtering for 'used' Security Groups...")
-		secGroups := utility.GetUsedSecGroups(allSecGroups)
+		var secGroupsList []resource.SecurityGroup
+		for _, sg := range allSecGroups {
+			secGroupsList = append(secGroupsList, *sg)
+		}
+		secGroups := utility.GetUsedSecGroups(secGroupsList)
 		fmt.Println("Virgil\t- Generating Firewall Rules...")
 		firewallRules := utility.GetFirewallRules(sources, secGroups)
 		fmt.Println("Virgil\t- Marshalling Firewall Rules to YAML...")
@@ -121,7 +128,7 @@ func main() {
 			fmt.Println(err.Error())
 			os.Exit(1)
 		}
-		ioutil.WriteFile(c.Args()[0], []byte(fmt.Sprintf("---\n%v", string(yml))), os.FileMode(0644))
+		os.WriteFile(c.Args()[0], []byte(fmt.Sprintf("---\n%v", string(yml))), os.FileMode(0644))
 		fmt.Println("Firewall Policy written to file: ", c.Args()[0])
 		return nil
 	}
